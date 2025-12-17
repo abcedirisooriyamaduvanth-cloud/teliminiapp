@@ -5,15 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>🏏 CricketStream Pro</title>
   
-  <!-- 🔥 MONETAG INSTALLATION TAG - PLACED BELOW HEAD -->
-  <script>
-    !function(t,n){if(t.Monetag = t.Monetag || {},!t.Monetag.load){var c=!1,i=function(){c||(c=!0,setTimeout(function(){var t=n.getElementsByTagName("script")[0],e=n.createElement("script");e.async=!0,e.src="https://a.mntag.com/scripts/loader.js",t.parentNode.insertBefore(e,t)},0))};t.Monetag.load=i}}(window,document);
-    Monetag.load('10340427');
-  </script>
-  <!-- End Monetag Tag -->
+  <!-- 🔥 OFFICIAL MONETAG SDK - MUST BE BELOW HEAD -->
+  <script src='//libtl.com/sdk.js' data-zone='10340427' data-sdk='show_10340427'></script>
   
   <style>
-    /* Modern Cricket Theme with Glassmorphism */
+    /* Premium Cricket Theme */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -31,7 +27,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       height: 100vh; text-align: center;
     }
-    .login-container h1 { font-size: 2.8rem; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); }
+    .login-container h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); }
     .login-container p { margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem; }
     .app-bar {
       display: flex; justify-content: space-between; align-items: center;
@@ -39,12 +35,6 @@
       border-radius: 15px; margin-bottom: 20px; position: sticky; top: 20px; z-index: 100;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
     }
-    .back-btn, .telegram-btn {
-      background: rgba(255,255,255,0.2); border: none; color: #fff;
-      padding: 10px 15px; border-radius: 8px; font-size: 14px; cursor: pointer;
-      transition: all 0.3s;
-    }
-    .back-btn:active, .telegram-btn:active { transform: scale(0.95); }
     .user-stats {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;
     }
@@ -54,91 +44,41 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .stat-value { display: block; font-size: 2.2rem; font-weight: bold; color: #f39c12; }
-    .stat-label { font-size: 0.8rem; opacity: 0.8; margin-top: 5px; }
     .section {
       background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
       padding: 20px; border-radius: 15px; margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    .section h3 { margin-bottom: 15px; color: #f39c12; display: flex; align-items: center; gap: 10px; }
-    #linkInput {
-      width: 100%; padding: 12px; border: none; border-radius: 8px; margin-bottom: 10px;
-      font-size: 14px; background: rgba(255,255,255,0.9);
-    }
-    .links-counter { text-align: right; font-size: 12px; opacity: 0.7; margin-top: 5px; }
-    .links-list { display: grid; gap: 12px; margin-top: 15px; }
-    .link-item {
-      background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 10px;
-    }
-    .link-url {
-      flex: 1; min-width: 200px; white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; font-size: 0.9rem;
-    }
-    .link-actions { display: flex; gap: 8px; align-items: center; }
-    .earn-btn {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      border: none; color: #0a3d25; padding: 8px 16px; border-radius: 8px;
-      font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: all 0.3s;
-    }
-    .earn-btn:active { transform: scale(0.95); }
-    .earn-btn:disabled { background: #666; color: #999; cursor: not-allowed; opacity: 0.6; }
-    .badge {
-      font-size: 0.75rem; padding: 4px 8px; border-radius: 4px;
-      background: rgba(243,156,18,0.3); color: #f39c12;
-    }
-    .status-message {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
-      padding: 30px; border-radius: 15px; text-align: center; z-index: 300;
-      display: none; max-width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    .status-message.show { display: block; }
-    .status-message h2 { color: #f39c12; margin-bottom: 10px; }
-    .ad-list { display: grid; gap: 12px; margin-bottom: 15px; }
     .ad-card {
       background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;
       display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.3s;
+      transition: all 0.3s; cursor: pointer;
     }
     .ad-card:active { transform: scale(0.98); }
     .ad-info h4 { color: #f39c12; margin-bottom: 5px; }
-    .ad-info p { font-size: 0.8rem; opacity: 0.8; }
-    .ad-reward { text-align: center; }
-    .ad-reward .minutes { font-size: 1.5rem; font-weight: bold; color: #2ecc71; }
-    .ad-reward .label { font-size: 0.7rem; opacity: 0.7; }
+    .ad-reward .minutes { font-size: 1.8rem; font-weight: bold; color: #2ecc71; }
     .ad-button-play {
       background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
       border: none; color: #fff; padding: 10px 20px; border-radius: 8px;
-      font-weight: bold; cursor: pointer; transition: all 0.3s;
+      font-weight: bold; cursor: pointer;
     }
-    .ad-button-play:active { transform: scale(0.95); }
-    .ad-button-play:disabled { background: #666; color: #999; cursor: not-allowed; opacity: 0.6; }
-    .ad-history {
-      max-height: 200px; overflow-y: auto; margin-top: 15px;
+    .ad-loading {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95); padding: 40px; border-radius: 15px;
+      text-align: center; z-index: 400; display: none;
     }
-    .ad-history-item {
-      background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;
-      margin-bottom: 8px; font-size: 0.8rem; display: flex; justify-content: space-between;
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #f39c12;
+      border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
     }
-    .ad-history-item .time { opacity: 0.6; }
-    .btn-primary, .btn-secondary {
-      width: 100%; padding: 15px; border: none; border-radius: 10px;
-      font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s;
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .status-message {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95); padding: 30px; border-radius: 15px;
+      text-align: center; z-index: 300; display: none;
     }
-    .btn-primary {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      color: #0a3d25;
-    }
-    .btn-secondary {
-      background: rgba(255,255,255,0.2); color: #fff;
-    }
-    @media (max-width: 480px) {
-      .login-container h1 { font-size: 2rem; }
-      .user-stats { grid-template-columns: 1fr; }
-      .link-url { min-width: 100%; }
-    }
+    .status-message.show { display: block; }
   </style>
 </head>
 <body>
@@ -178,7 +118,7 @@
 
       <!-- MONETAG ADS SECTION -->
       <div class="section">
-        <h3>🎯 Earn Minutes by Watching Ads</h3>
+        <h3>🎯 Earn Minutes (Watch Ads)</h3>
         <div id="adsList" class="ad-list"></div>
         <div id="adHistory" class="ad-history"></div>
       </div>
@@ -197,6 +137,13 @@
         <div id="statusIcon" style="font-size: 3rem; margin-bottom: 10px;">✅</div>
         <div id="statusText" style="font-size: 1.2rem; margin-bottom: 20px;">Success!</div>
         <button id="statusCloseBtn" class="btn-primary">Continue</button>
+      </div>
+
+      <!-- Ad Loading Overlay -->
+      <div id="adLoading" class="ad-loading">
+        <div class="spinner"></div>
+        <h3>Loading Advertisement...</h3>
+        <p style="margin-top: 10px; font-size: 0.9rem;">Please wait while we prepare your ad</p>
       </div>
 
       <!-- Stream Viewer -->
@@ -238,32 +185,40 @@
     const auth = firebase.auth();
 
     // ======================
-    // 🎯 MONETAG AD CONFIG
+    // 🎯 AD CONFIGURATION
     // ======================
-    const MONETAG_SITE_ID = '10340427';
-    const MINUTES_PER_AD = 3; // Reduced from 5 to 3 minutes as requested
+    const MINUTES_PER_AD = 3; // Changed to 3 minutes as requested
 
-    // Ad format definitions
+    // Ad format definitions with Monetag functions
     const AD_FORMATS = [
       { 
         id: 'rewarded-interstitial', 
         name: '🏆 Rewarded Video', 
         description: 'Watch full video for max rewards',
-        type: 'rewarded',
+        play: () => show_10340427(),
         minutes: MINUTES_PER_AD
       },
       { 
         id: 'rewarded-popup', 
         name: '💥 Rewarded Popup', 
         description: 'Quick popup ad, instant reward',
-        type: 'pop',
-        minutes: Math.floor(MINUTES_PER_AD * 0.8) // Slightly less for popup
+        play: () => show_10340427('pop'),
+        minutes: Math.floor(MINUTES_PER_AD * 0.8) // 2.4 min for popup
       },
       { 
         id: 'inapp-interstitial', 
         name: '📺 In-App Interstitial', 
         description: 'Full-screen immersive ad',
-        type: 'inApp',
+        play: () => show_10340427({
+          type: 'inApp',
+          inAppSettings: {
+            frequency: 1,
+            capping: 0.1,    // 6 min cooldown
+            interval: 30,
+            timeout: 2,      // 2 sec delay
+            everyPage: false
+          }
+        }),
         minutes: MINUTES_PER_AD
       }
     ];
@@ -299,7 +254,7 @@
     const watchTimeStat = document.getElementById('watchTime');
     const pointsEarnedStat = document.getElementById('pointsEarned');
     const adsList = document.getElementById('adsList');
-    const adHistory = document.getElementById('adHistory');
+    const adHistoryEl = document.getElementById('adHistory');
     const statusMessage = document.getElementById('statusMessage');
     const statusIcon = document.getElementById('statusIcon');
     const statusText = document.getElementById('statusText');
@@ -307,6 +262,7 @@
     const streamViewer = document.getElementById('streamViewer');
     const streamFrame = document.getElementById('streamFrame');
     const closeStreamBtn = document.getElementById('closeStreamBtn');
+    const adLoading = document.getElementById('adLoading');
 
     // ======================
     // 🚀 INITIALIZATION
@@ -368,23 +324,25 @@
     // 📋 LOAD AD HISTORY
     // ======================
     async function loadAdHistory() {
+      if (!currentUser) return;
+      
       try {
         const snapshot = await db.collection('ad_sessions')
-          .where('uid', '==', currentUser?.uid || 'none')
+          .where('uid', '==', currentUser.uid)
           .orderBy('timestamp', 'desc')
           .limit(10)
           .get();
         
-        adHistory.innerHTML = '<h4 style="color:#f39c12;margin-bottom:10px;">📊 Recent Ad Activity</h4>';
+        adHistoryEl.innerHTML = '<h4 style="color:#f39c12;margin-bottom:10px;">📊 Recent Activity</h4>';
         
         if (snapshot.empty) {
-          adHistory.innerHTML += '<p style="opacity:0.6;font-size:0.8rem;">No ad history yet</p>';
+          adHistoryEl.innerHTML += '<p style="opacity:0.6;font-size:0.8rem;">No ad history yet</p>';
           return;
         }
 
         snapshot.forEach(doc => {
           const data = doc.data();
-          const time = data.timestamp?.toDate().toLocaleTimeString() || 'Unknown';
+          const time = data.timestamp?.toDate().toLocaleTimeString() || new Date().toLocaleTimeString();
           const status = data.status === 'completed' ? '✅' : '❌';
           const type = data.adType || 'Unknown';
           const minutes = data.minutesEarned || 0;
@@ -395,7 +353,7 @@
             <span>${status} <strong>${type}</strong> - +${minutes} min</span>
             <span class="time">${time}</span>
           `;
-          adHistory.appendChild(item);
+          adHistoryEl.appendChild(item);
         });
       } catch (err) {
         console.error('Load ad history error:', err);
@@ -403,87 +361,29 @@
     }
 
     // ======================
-    // ⚙️ EVENT LISTENERS
-    // ======================
-    function setupEventListeners() {
-      loginBtn.addEventListener('click', handleLogin);
-      backBtn.addEventListener('click', goBack);
-      telegramBtn.addEventListener('click', openTelegram);
-      addLinkBtn.addEventListener('click', addLink);
-      statusCloseBtn.addEventListener('click', hideStatusMessage);
-      closeStreamBtn.addEventListener('click', closeStreamViewer);
-    }
-
-    // ======================
-    // 🔑 LOGIN
-    // ======================
-    async function handleLogin() {
-      try {
-        const result = await auth.signInAnonymously();
-        currentUser = result.user;
-        if (telegramId) await linkTelegramAccount(currentUser);
-        showScreen('dashboard');
-      } catch (err) {
-        alert('Login failed: ' + err.message);
-      }
-    }
-
-    // ======================
-    // ➕ ADD STREAMING LINK
-    // ======================
-    async function addLink() {
-      const url = linkInput.value.trim();
-      if (!url) return showStatus('⚠️', 'Please enter a valid URL', false);
-      if (links.length >= MAX_LINKS) return showStatus('⚠️', `Maximum ${MAX_LINKS} links allowed`, false);
-      if (!isValidUrl(url)) return showStatus('⚠️', 'Invalid URL format', false);
-
-      const linkId = generateUniqueId();
-      const newLink = {
-        id: linkId,
-        url,
-        addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        clicks: 0,
-        isUnlocked: false
-      };
-      links.push(newLink);
-
-      try {
-        await db.collection('users').doc(currentUser.uid).set({ linksAdded: links }, { merge: true });
-        linkInput.value = '';
-        updateLinksDisplay();
-        linksCountStat.textContent = links.length;
-        showStatus('✅', 'Link added successfully!');
-      } catch (err) {
-        showStatus('❌', 'Failed to add link', false);
-        console.error(err);
-      }
-    }
-
-    // ======================
-    // 🎯 LOAD AD BUTTONS WITH MONETAG INTEGRATION
+    // 🎯 LOAD AD BUTTONS
     // ======================
     function loadAdButtons() {
       adsList.innerHTML = '';
+      
       AD_FORMATS.forEach(format => {
-        const card = document.createElement('div');
-        card.className = 'ad-card';
-        
         const isAvailable = checkAdAvailability(format.id);
-        const statusIcon = isAvailable ? '🟢' : '🔴';
+        const statusClass = isAvailable ? 'status-available' : 'status-cooldown';
         const statusText = isAvailable ? 'Available' : 'Cooldown';
+        
+        const card = document.createElement('div');
+        card.className = `ad-card ${!isAvailable ? 'disabled' : ''}`;
+        card.onclick = isAvailable ? () => playMonetagAd(format) : null;
         
         card.innerHTML = `
           <div class="ad-info">
             <h4>${format.name}</h4>
             <p>${format.description}</p>
-            <span style="font-size:0.7rem;opacity:0.7;">${statusIcon} ${statusText}</span>
+            <span class="ad-status ${statusClass}">${statusText}</span>
           </div>
           <div class="ad-reward">
             <div class="minutes">+${format.minutes}</div>
             <div class="label">minutes</div>
-            <button class="ad-button-play" onclick="playMonetagAd('${format.type}', ${format.minutes})" ${!isAvailable ? 'disabled' : ''}>
-              ${isAvailable ? '▶️ Play' : '⏳ Wait'}
-            </button>
           </div>
         `;
         adsList.appendChild(card);
@@ -493,26 +393,41 @@
     // ======================
     // 🎮 PLAY MONETAG AD (CORE FUNCTION)
     // ======================
-    async function playMonetagAd(adType, minutesToEarn) {
+    async function playMonetagAd(format) {
       // Prevent multiple sessions
       if (currentAdSession) {
         showStatus('⚠️', 'Please wait for current ad to finish', false);
         return;
       }
 
+      // Check if Monetag SDK is loaded
+      if (typeof show_10340427 !== 'function') {
+        showStatus('❌', 'Ad system not ready. Retrying...', false);
+        
+        // Wait for SDK to load
+        setTimeout(() => {
+          if (typeof show_10340427 === 'function') {
+            playMonetagAd(format); // Retry
+          } else {
+            showStatus('❌', 'Ad system failed to load. Refresh app.', false);
+          }
+        }, 2000);
+        return;
+      }
+
+      // Show loading overlay
+      adLoading.classList.add('show');
+
       // Create session
       const sessionId = generateUniqueId();
       currentAdSession = {
         sessionId,
-        adType: adType,
-        adId: MONETAG_SITE_ID,
-        minutesToEarn: minutesToEarn,
+        adType: format.name,
+        adId: format.id,
+        minutesToEarn: format.minutes,
         startTime: Date.now(),
         status: 'started'
       };
-
-      // Show loading state
-      showStatus('⏳', 'Loading ad...', false);
 
       try {
         // Save session to Firestore
@@ -522,28 +437,16 @@
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Call Monetag ad based on type
-        let adPromise;
-        
-        switch(adType) {
-          case 'rewarded':
-            adPromise = showMonetagRewardedAd();
-            break;
-          case 'pop':
-            adPromise = showMonetagPopupAd();
-            break;
-          case 'inApp':
-            adPromise = showMonetagInAppAd();
-            break;
-          default:
-            throw new Error('Unknown ad type');
-        }
+        // Hide loading before showing ad
+        adLoading.classList.remove('show');
 
-        // Wait for ad completion
+        // Call Monetag ad with proper error handling
+        const adPromise = format.play();
+        
         adPromise.then(async () => {
           // Ad completed successfully
           currentAdSession.status = 'completed';
-          await completeAdReward(sessionId, minutesToEarn);
+          await completeAdReward(sessionId, format.minutes);
         }).catch(async (error) => {
           // Ad failed or user closed early
           currentAdSession.status = 'failed';
@@ -554,70 +457,15 @@
           });
           showStatus('❌', 'Ad was not completed', false);
           currentAdSession = null;
+          loadAdButtons();
         });
 
       } catch (err) {
         console.error('Monetag ad error:', err);
+        adLoading.classList.remove('show');
         showStatus('❌', 'Failed to load ad', false);
         currentAdSession = null;
       }
-    }
-
-    // ======================
-    // 🎬 MONETAG AD HANDLERS
-    // ======================
-    function showMonetagRewardedAd() {
-      return new Promise((resolve, reject) => {
-        if (typeof show_10340427 !== 'function') {
-          reject(new Error('Monetag SDK not loaded'));
-          return;
-        }
-        
-        show_10340427().then(() => {
-          resolve();
-        }).catch((e) => {
-          reject(e);
-        });
-      });
-    }
-
-    function showMonetagPopupAd() {
-      return new Promise((resolve, reject) => {
-        if (typeof show_10340427 !== 'function') {
-          reject(new Error('Monetag SDK not loaded'));
-          return;
-        }
-        
-        show_10340427('pop').then(() => {
-          resolve();
-        }).catch((e) => {
-          reject(e);
-        });
-      });
-    }
-
-    function showMonetagInAppAd() {
-      return new Promise((resolve, reject) => {
-        if (typeof show_10340427 !== 'function') {
-          reject(new Error('Monetag SDK not loaded'));
-          return;
-        }
-        
-        show_10340427({
-          type: 'inApp',
-          inAppSettings: {
-            frequency: 1,      // Show 1 ad
-            capping: 0.1,      // 6 minutes cooldown
-            interval: 30,      // 30 sec interval
-            timeout: 2,        // 2 sec delay
-            everyPage: false
-          }
-        }).then(() => {
-          resolve();
-        }).catch((e) => {
-          reject(e);
-        });
-      });
     }
 
     // ======================
@@ -639,14 +487,19 @@
           lastActive: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        // Record last played time for cooldown
+        localStorage.setItem(`lastAd_${currentAdSession.adId}`, Date.now().toString());
+
+        // Hide loading
+        adLoading.classList.remove('show');
+
         // Show success
-        hideStatusMessage();
         showStatus('✅', `+${minutesEarned} minutes earned!`);
 
         // Refresh data
         await loadUserData();
         await loadAdHistory();
-        loadAdButtons(); // Refresh button states
+        loadAdButtons();
 
       } catch (err) {
         console.error('Reward completion error:', err);
@@ -657,12 +510,10 @@
     }
 
     // ======================
-    // ⏰ AD AVAILABILITY CHECK
+    // ⏰ AD COOLDOWN CHECK
     // ======================
-    function checkAdAvailability(adFormatId) {
-      // Simple cooldown logic - 6 minutes between same ad type
-      // In production, you'd check Firestore for last completion time
-      const lastPlayed = localStorage.getItem(`lastAd_${adFormatId}`);
+    function checkAdAvailability(adId) {
+      const lastPlayed = localStorage.getItem(`lastAd_${adId}`);
       if (!lastPlayed) return true;
       
       const cooldownMs = 6 * 60 * 1000; // 6 minutes
@@ -697,15 +548,21 @@
       const totalEarnedMinutes = parseInt(watchTimeStat.textContent) || 0;
       
       links.forEach(link => {
-        const isUnlocked = totalEarnedMinutes > 0;
+        const isUnlocked = totalEarnedMinutes >= MINUTES_PER_AD;
+        if (isUnlocked && !link.isUnlocked) {
+          link.isUnlocked = true;
+          db.collection('users').doc(currentUser.uid).set({
+            linksAdded: links
+          }, { merge: true });
+        }
         
         const statusBadge = isUnlocked ? 
           '<div class="badge" style="background: rgba(46,204,113,0.3); color: #2ecc71;">✅ Ready</div>' : 
-          '<div class="badge">🔒 Needs Minutes</div>';
+          `<div class="badge">🔒 Need ${MINUTES_PER_AD}m</div>`;
         
         const actionButton = isUnlocked ?
-          `<button class="earn-btn" onclick="openStream('${link.url}')">▶️ Watch Stream</button>` :
-          `<button class="earn-btn" disabled>Add Minutes</button>`;
+          `<button class="earn-btn" onclick="openStream('${link.url}')">▶️ Watch</button>` :
+          `<button class="earn-btn" disabled>${MINUTES_PER_AD}m to unlock</button>`;
         
         const el = document.createElement('div');
         el.className = 'link-item';
@@ -726,10 +583,7 @@
       statusIcon.textContent = icon;
       statusText.textContent = text;
       statusMessage.classList.add('show');
-      
-      if (autoHide) {
-        setTimeout(() => hideStatusMessage(), 5000);
-      }
+      if (autoHide) setTimeout(hideStatusMessage, 5000);
     }
 
     function hideStatusMessage() {
@@ -737,7 +591,7 @@
     }
 
     // ======================
-    // 🧭 NAVIGATION
+    // 🧭 NAVIGATION & UTILS
     // ======================
     function showScreen(name) {
       loginScreen.classList.toggle('active', name === 'login');
@@ -745,9 +599,7 @@
     }
 
     function goBack() {
-      if (streamViewer.classList.contains('active')) {
-        closeStreamViewer();
-      }
+      if (streamViewer.classList.contains('active')) closeStreamViewer();
     }
 
     function openTelegram() {
@@ -755,9 +607,6 @@
       window.open(url, '_blank');
     }
 
-    // ======================
-    // 🛠️ UTILITIES
-    // ======================
     function isValidUrl(str) {
       try { return Boolean(new URL(str)); } catch { return false; }
     }
@@ -765,6 +614,13 @@
     function generateUniqueId() {
       return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
+
+    // ======================
+    // 🔁 PERIODIC REFRESH
+    // ======================
+    setInterval(() => {
+      if (currentUser) loadAdButtons();
+    }, 30000);
   </script>
 </body>
 </html>
