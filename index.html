@@ -1,241 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>🏏 CricketStream Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏏 CricketStream Pro</title>
 
-  <!-- MONETAG SDK -->
-  <script src="//libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
+<!-- MONETAG SDK -->
+<script src="//libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      background: radial-gradient(circle at top, #14532d, #052e16);
-      color: #fff;
-      min-height: 100vh;
-    }
+<!-- TELEGRAM SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-    button {
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-    }
+<style>
+body {
+  margin:0;
+  font-family: system-ui, sans-serif;
+  background:#062e16;
+  color:#fff;
+}
+.hidden { display:none; }
 
-    .screen { display: none; padding: 20px; }
-    .screen.active { display: block; }
+header {
+  padding:14px;
+  background:#0008;
+  text-align:center;
+  font-weight:700;
+}
 
-    /* LOGIN */
-    .login {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-    .login h1 { font-size: 3rem; margin-bottom: 10px; }
-    .login p { opacity: .85; margin-bottom: 25px; }
+.section {
+  margin:14px;
+  padding:14px;
+  background:#ffffff10;
+  border-radius:12px;
+}
 
-    .btn-primary {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: #fff;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-size: 1rem;
-    }
+button {
+  background:#22c55e;
+  border:none;
+  padding:12px 16px;
+  border-radius:10px;
+  font-weight:600;
+}
 
-    /* HEADER */
-    .header {
-      position: sticky;
-      top: 0;
-      background: rgba(0,0,0,.45);
-      backdrop-filter: blur(12px);
-      padding: 14px 20px;
-      border-radius: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+.ad {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  background:#0006;
+  padding:12px;
+  border-radius:10px;
+}
 
-    /* STATS */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .stat {
-      background: rgba(255,255,255,.08);
-      border-radius: 14px;
-      padding: 16px;
-      text-align: center;
-    }
-    .stat b { display: block; font-size: 1.8rem; color: #facc15; }
+.loading {
+  position:fixed;
+  inset:0;
+  background:#000d;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:999;
+}
+.loading.show { display:flex; }
 
-    /* SECTION */
-    .section {
-      background: rgba(255,255,255,.07);
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 18px;
-    }
-
-    /* ADS */
-    .ad-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(0,0,0,.35);
-      border-radius: 14px;
-      padding: 14px;
-      margin-top: 12px;
-    }
-    .ad-card button {
-      background: #22c55e;
-      padding: 10px 16px;
-      border-radius: 10px;
-      color: #000;
-    }
-
-    /* LOADING */
-    .loading {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.9);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      flex-direction: column;
-    }
-    .loading.show { display: flex; }
-
-    .spinner {
-      width: 52px;
-      height: 52px;
-      border: 4px solid rgba(255,255,255,.3);
-      border-top-color: #22c55e;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 14px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* STREAM */
-    .viewer {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: none;
-      z-index: 800;
-    }
-    .viewer.active { display: block; }
-    .viewer iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+iframe {
+  width:100%;
+  height:100vh;
+  border:none;
+}
+</style>
 </head>
 
 <body>
 
+<header>🏏 CricketStream Pro</header>
+
 <!-- LOGIN -->
-<div id="login" class="screen login active">
-  <div>
-    <h1>🏏 CricketStream Pro</h1>
-    <p>Watch ads → earn minutes → watch cricket</p>
-    <button class="btn-primary" onclick="login()">Login with Telegram</button>
-  </div>
+<div id="login" class="section">
+  <p>Login required to continue</p>
+  <button onclick="login()">Login with Telegram</button>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="screen">
-  <div class="header">
-    <b>Dashboard</b>
-    <span>📱 Telegram</span>
-  </div>
-
-  <div class="stats">
-    <div class="stat"><b id="minutes">0</b>Minutes</div>
-    <div class="stat"><b id="links">0</b>Links</div>
-    <div class="stat"><b id="points">0</b>Points</div>
-  </div>
+<div id="dashboard" class="hidden">
 
   <div class="section">
+    <b>User:</b> <span id="user"></span><br>
+    <b>Minutes:</b> <span id="minutes">0</span>
+  </div>
+
+  <!-- EARN WAYS -->
+  <div class="section">
     <h3>🎯 Earn Minutes</h3>
-    <div class="ad-card" onclick="playAd()">
+
+    <div class="ad">
       <div>
         <b>Rewarded Video</b><br>
-        <small>+3 minutes</small>
+        +3 minutes
       </div>
-      <button>Watch</button>
+      <button onclick="watchAd()">Watch</button>
     </div>
   </div>
 
+  <!-- STREAM -->
   <div class="section">
     <h3>📺 Watch Stream</h3>
-    <input id="streamUrl"
-      placeholder="Paste stream URL"
-      style="width:100%;padding:12px;border-radius:10px;border:none" />
-    <button class="btn-primary" style="margin-top:10px" onclick="openStream()">Open Stream</button>
+    <input id="streamUrl" placeholder="Paste stream URL"
+      style="width:100%;padding:10px;border-radius:8px;border:none">
+    <button style="margin-top:10px" onclick="openStream()">Open Stream</button>
   </div>
+
 </div>
 
 <!-- LOADING -->
 <div id="loading" class="loading">
-  <div class="spinner"></div>
-  <p>Loading advertisement…</p>
+  <p>Loading Ad…</p>
 </div>
 
-<!-- STREAM VIEWER -->
-<div id="viewer" class="viewer">
+<!-- STREAM VIEW -->
+<div id="viewer" class="hidden">
+  <button onclick="closeStream()" style="margin:10px">⬅ Back</button>
   <iframe id="frame"></iframe>
 </div>
 
 <script>
-  const loginScreen = document.getElementById('login');
-  const dashboard = document.getElementById('dashboard');
-  const loading = document.getElementById('loading');
-  const viewer = document.getElementById('viewer');
-  const frame = document.getElementById('frame');
+/* =====================
+   GLOBAL STATE
+===================== */
+let tgUser = null;
+let minutes = 0;
+let lastAdTime = 0;
+const COOLDOWN = 6 * 60 * 1000; // 6 minutes
 
-  let minutes = 0;
+/* =====================
+   AUTH
+===================== */
+function login() {
+  const tg = window.Telegram.WebApp;
+  tg.ready();
 
-  function login() {
-    loginScreen.classList.remove('active');
-    dashboard.classList.add('active');
+  if (!tg.initDataUnsafe.user) {
+    alert("Open inside Telegram");
+    return;
   }
 
-  function playAd() {
-    if (typeof show_10340427 !== 'function') {
-      alert('Ad system not ready');
-      return;
-    }
+  tgUser = tg.initDataUnsafe.user;
+  document.getElementById('user').innerText =
+    tgUser.username || tgUser.first_name;
 
-    loading.classList.add('show');
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+}
 
-    // Monetag does NOT return promise – this is correct handling
-    show_10340427();
-
-    // Safe reward fallback
-    setTimeout(() => {
-      loading.classList.remove('show');
-      minutes += 3;
-      document.getElementById('minutes').innerText = minutes;
-      document.getElementById('points').innerText = minutes;
-      alert('+3 minutes earned');
-    }, 7000);
+/* =====================
+   EARN LOGIC
+===================== */
+function watchAd() {
+  const now = Date.now();
+  if (now - lastAdTime < COOLDOWN) {
+    alert("Ad cooldown active");
+    return;
   }
 
-  function openStream() {
-    const url = document.getElementById('streamUrl').value;
-    if (!url) return alert('Add stream URL');
-    viewer.classList.add('active');
-    frame.src = url;
+  if (typeof show_10340427 !== 'function') {
+    alert("Ad not ready");
+    return;
   }
+
+  document.getElementById('loading').classList.add('show');
+
+  show_10340427(); // Monetag call
+
+  // SAFE reward fallback
+  setTimeout(() => {
+    document.getElementById('loading').classList.remove('show');
+    minutes += 3;
+    lastAdTime = Date.now();
+    document.getElementById('minutes').innerText = minutes;
+    alert("+3 minutes added");
+  }, 7000);
+}
+
+/* =====================
+   STREAM LOGIC
+===================== */
+function openStream() {
+  if (minutes < 3) {
+    alert("Earn minutes first");
+    return;
+  }
+
+  const url = document.getElementById('streamUrl').value;
+  if (!url) {
+    alert("Add stream URL");
+    return;
+  }
+
+  minutes -= 3;
+  document.getElementById('minutes').innerText = minutes;
+
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('viewer').classList.remove('hidden');
+  document.getElementById('frame').src = url;
+}
+
+function closeStream() {
+  document.getElementById('viewer').classList.add('hidden');
+  document.getElementById('dashboard').classList.remove('hidden');
+  document.getElementById('frame').src = '';
+}
 </script>
 
 </body>
