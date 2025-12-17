@@ -52,7 +52,7 @@
       font-size: 14px; background: rgba(255,255,255,0.9);
     }
     .links-counter { text-align: right; font-size: 12px; opacity: 0.7; margin-top: 5px; }
-    .links-list { display: grid; gap: 12px; margin-bottom: 20px; }
+    .links-list { display: grid; gap: 12px; margin-top: 15px; }
     .link-item {
       background: rgba(255,255,255,0.1); padding: 15px; border-radius: 12px;
       display: flex; justify-content: space-between; align-items: center;
@@ -70,10 +70,21 @@
     }
     .earn-btn:active { transform: scale(0.95); }
     .earn-btn:disabled { background: #666; color: #999; cursor: not-allowed; }
-    .badge {
-      font-size: 0.75rem; padding: 4px 8px; border-radius: 4px;
-      background: rgba(243,156,18,0.3); color: #f39c12;
+    .status-message {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.9); padding: 30px; border-radius: 15px;
+      text-align: center; z-index: 300; display: none; max-width: 90%;
     }
+    .status-message.show { display: block; }
+    .status-message h2 { color: #f39c12; margin-bottom: 10px; }
+    .ad-list { display: grid; gap: 10px; margin-bottom: 15px; }
+    .ad-button {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      border: none; color: #0a3d25; padding: 12px; border-radius: 10px;
+      font-weight: bold; cursor: pointer; text-align: center; width: 100%; font-size: 16px;
+    }
+    .ad-button:disabled { background: #666; color: #999; cursor: not-allowed; opacity: 0.6; }
+    .ad-button.loading { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
     .ad-viewer {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #000; z-index: 200; display: none; flex-direction: column;
@@ -87,56 +98,14 @@
       flex: 1; display: flex; align-items: center; justify-content: center;
       position: relative;
     }
-    .ad-placeholder {
-      text-align: center; color: #fff;
+    #adFrame { width: 100%; height: 100%; border: none; }
+    .complete-btn {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      border: none; color: #fff; padding: 15px 30px; border-radius: 10px;
+      font-weight: bold; cursor: pointer; font-size: 18px; z-index: 10;
     }
-    .loading-spinner {
-      border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #f39c12;
-      border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
-    }
-    .timer-display {
-      position: absolute; top: 20px; right: 20px;
-      background: rgba(0,0,0,0.7); padding: 15px; border-radius: 50%;
-      width: 80px; height: 80px; display: flex; align-items: center;
-      justify-content: center; flex-direction: column;
-    }
-    #timerText { font-size: 1.5rem; font-weight: bold; color: #f39c12; }
-    .progress-bar {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
-      background: rgba(255,255,255,0.2);
-    }
-    .progress-fill {
-      height: 100%; background: linear-gradient(90deg, #f39c12, #e67e22);
-      width: 0%; transition: width 0.3s ease;
-    }
-    .btn-primary, .btn-secondary {
-      width: 100%; padding: 15px; border: none; border-radius: 10px;
-      font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      color: #0a3d25;
-    }
-    .btn-secondary {
-      background: rgba(255,255,255,0.2); color: #fff;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .status-message {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.9); padding: 30px; border-radius: 15px;
-      text-align: center; z-index: 300; display: none;
-    }
-    .status-message.show { display: block; }
-    .status-message h2 { color: #f39c12; margin-bottom: 10px; }
-    .ad-list { display: grid; gap: 10px; }
-    .ad-button {
-      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-      border: none; color: #0a3d25; padding: 12px; border-radius: 10px;
-      font-weight: bold; cursor: pointer; text-align: center; width: 100%;
-    }
-    .ad-button:disabled { background: #666; color: #999; cursor: not-allowed; }
-    .ad-button.completed { background: rgba(46,204,113,0.5); color: #2ecc71; }
+    .complete-btn:active { transform: translateX(-50%) scale(0.95); }
     @media (max-width: 480px) {
       .login-container h1 { font-size: 2rem; }
       .user-stats { grid-template-columns: 1fr; }
@@ -151,7 +120,7 @@
       <div class="cricket-bg"></div>
       <div class="login-container">
         <h1>🏏 CricketStream Pro</h1>
-        <p>Earn 5 minutes per ad!</p>
+        <p>Instant rewards - No waiting!</p>
         <button id="loginBtn" class="btn-primary">Login with Telegram</button>
       </div>
     </div>
@@ -179,9 +148,9 @@
         </div>
       </div>
 
-      <!-- MONETAG ADS SECTION -->
+      <!-- MONETAG ADS SECTION - INSTANT CLICK -->
       <div class="section">
-        <h3>🎯 Earn Minutes (Watch Ads)</h3>
+        <h3>🎯 Earn Minutes (Click & Complete)</h3>
         <div id="adsList" class="ad-list"></div>
       </div>
 
@@ -201,24 +170,17 @@
         <button id="statusCloseBtn" class="btn-primary">Continue</button>
       </div>
 
-      <!-- Ad Viewer -->
+      <!-- Ad Viewer - NO TIMER -->
       <div id="adViewer" class="ad-viewer">
         <div class="ad-header">
-          <h3>🎯 Watching Ad - Earn 5 Minutes</h3>
-          <button id="skipAdBtn" class="back-btn" style="display: none;">Skip →</button>
+          <h3>🎯 View Ad & Click Complete</h3>
+          <button id="closeAdBtn" class="back-btn">Close</button>
         </div>
         <div class="ad-content">
-          <div class="ad-placeholder" id="adPlaceholder">
-            <div class="loading-spinner"></div>
-            <p style="margin-top: 20px;">Loading advertisement...</p>
-            <div id="adTimer" class="timer-display">
-              <div id="adTimerText">5:00</div>
-            </div>
-          </div>
-          <iframe id="adFrame" style="width: 100%; height: 100%; border: none; display: none;"></iframe>
-        </div>
-        <div class="progress-bar">
-          <div id="adProgress" class="progress-fill"></div>
+          <iframe id="adFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+          <button id="completeAdBtn" class="complete-btn" style="display: none;">
+            ✅ Click to Complete (+5 Min)
+          </button>
         </div>
       </div>
 
@@ -243,7 +205,7 @@
 
   <script>
     // ======================
-    // 🔧 CONFIGURE FIREBASE
+    // 🔧 FIREBASE CONFIG
     // ======================
     const firebaseConfig = {
       apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
@@ -261,7 +223,7 @@
     const auth = firebase.auth();
 
     // ======================
-    // 🎯 MONETAG AD LINKS - PASTE YOUR LINKS HERE
+    // 🎯 MONETAG AD LINKS
     // ======================
     const MONETAG_AD_LINKS = [
       { id: 'ad1', url: 'https://otieu.com/4/9963814', name: 'Ad #1 - Sports' },
@@ -276,7 +238,6 @@
     tg?.ready();
     const telegramUser = tg?.initDataUnsafe?.user || {};
     const telegramId = telegramUser.id;
-    const telegramUsername = telegramUser.username;
 
     // ======================
     // 🧠 GLOBAL STATE
@@ -285,9 +246,6 @@
     let links = [];
     const MAX_LINKS = 10;
     let currentAdSession = null;
-    let adTimerInterval = null;
-    let adTimeRemaining = 300; // 5 minutes
-    let completedAds = new Set(); // Track completed ads in current session
 
     // ======================
     // 🎛️ DOM ELEMENTS
@@ -302,14 +260,12 @@
     const linksList = document.getElementById('linksList');
     const linksCounter = document.getElementById('linksCounter');
     const watchTimeStat = document.getElementById('watchTime');
-    const linksCountStat = document.getElementById('linksCount');
     const pointsEarnedStat = document.getElementById('pointsEarned');
     const adsList = document.getElementById('adsList');
     const adViewer = document.getElementById('adViewer');
     const adFrame = document.getElementById('adFrame');
-    const adTimerText = document.getElementById('adTimerText');
-    const adProgress = document.getElementById('adProgress');
-    const skipAdBtn = document.getElementById('skipAdBtn');
+    const completeAdBtn = document.getElementById('completeAdBtn');
+    const closeAdBtn = document.getElementById('closeAdBtn');
     const statusMessage = document.getElementById('statusMessage');
     const statusIcon = document.getElementById('statusIcon');
     const statusText = document.getElementById('statusText');
@@ -324,7 +280,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       initFirebaseAuth();
       setupEventListeners();
-      loadAdButtons(); // Load Monetag ad buttons on startup
+      loadAdButtons();
     });
 
     // ======================
@@ -347,7 +303,7 @@
       try {
         await db.collection('users').doc(user.uid).set({
           telegramId: telegramId,
-          telegramUsername: telegramUsername || '',
+          telegramUsername: telegramUser.username || '',
           lastActive: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
       } catch (err) {
@@ -379,11 +335,9 @@
     function loadAdButtons() {
       adsList.innerHTML = '';
       MONETAG_AD_LINKS.forEach(ad => {
-        const isCompleted = completedAds.has(ad.id);
         const button = document.createElement('button');
-        button.className = isCompleted ? 'ad-button completed' : 'ad-button';
-        button.textContent = isCompleted ? '✅ Completed' : `Watch ${ad.name} - Earn 5 Min`;
-        button.disabled = isCompleted;
+        button.className = 'ad-button';
+        button.textContent = `Watch ${ad.name} - Earn 5 Min`;
         button.onclick = () => startAdSession(ad.id, ad.url);
         adsList.appendChild(button);
       });
@@ -397,9 +351,19 @@
       backBtn.addEventListener('click', goBack);
       telegramBtn.addEventListener('click', openTelegram);
       addLinkBtn.addEventListener('click', addLink);
-      skipAdBtn.addEventListener('click', completeAdSession);
+      completeAdBtn.addEventListener('click', completeAdSession);
+      closeAdBtn.addEventListener('click', closeAdViewer);
       statusCloseBtn.addEventListener('click', hideStatusMessage);
       closeStreamBtn.addEventListener('click', closeStreamViewer);
+      
+      // Auto-show complete button when iframe loads
+      adFrame.addEventListener('load', () => {
+        if (currentAdSession && adFrame.src) {
+          completeAdBtn.style.display = 'block';
+          // Hide loading placeholder
+          document.getElementById('adPlaceholder').style.display = 'none';
+        }
+      });
     }
 
     // ======================
@@ -431,7 +395,6 @@
         url,
         addedAt: firebase.firestore.FieldValue.serverTimestamp(),
         clicks: 0,
-        earnedMinutes: 0,
         isUnlocked: false
       };
       links.push(newLink);
@@ -449,43 +412,33 @@
     }
 
     // ======================
-    // 🎯 START AD SESSION (Monetag)
+    // 🎯 START AD SESSION (INSTANT LOAD)
     // ======================
     async function startAdSession(adId, adUrl) {
       // Prevent multiple sessions
       if (currentAdSession) return;
-
-      // Check if already completed in this session
-      if (completedAds.has(adId)) {
-        showStatus('ℹ️', 'You already earned minutes from this ad!', false);
-        return;
-      }
-
-      // Check rate limit
-      if (!(await checkRateLimit())) return;
 
       // Show ad viewer
       adViewer.classList.add('active');
       backBtn.style.display = 'inline-block';
       toggleDashboardUI(false);
 
-      // Mark as started
-      completedAds.add(adId);
-      loadAdButtons(); // Update button appearance
+      // Show loading state
+      document.getElementById('adPlaceholder').style.display = 'block';
+      completeAdBtn.style.display = 'none';
 
-      // Create unique session
+      // Create session
       const sessionId = generateUniqueId();
       currentAdSession = {
         sessionId,
         adId,
         adUrl,
         startTime: Date.now(),
-        status: 'started',
-        pointsEarned: 5
+        status: 'started'
       };
 
-      // Save to Firestore
       try {
+        // Save session to Firestore
         await db.collection('ad_sessions').doc(sessionId).set({
           ...currentAdSession,
           uid: currentUser.uid,
@@ -493,58 +446,21 @@
         });
 
         // Load Monetag ad
-        adFrame.style.display = 'block';
         adFrame.src = adUrl;
-        
-        // Start timer
-        startAdTimer();
         
       } catch (err) {
         console.error('Ad session error:', err);
-        cancelAdSession();
+        closeAdViewer();
         showStatus('❌', 'Failed to load ad', false);
       }
     }
 
     // ======================
-    // ⏱️ AD TIMER
-    // ======================
-    function startAdTimer() {
-      adTimeRemaining = 300; // 5 minutes
-      updateAdProgress();
-
-      adTimerInterval = setInterval(() => {
-        adTimeRemaining--;
-        updateAdProgress();
-
-        if (adTimeRemaining <= 0) {
-          completeAdSession();
-        }
-      }, 1000);
-    }
-
-    function updateAdProgress() {
-      const mins = Math.floor(adTimeRemaining / 60);
-      const secs = adTimeRemaining % 60;
-      adTimerText.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-      
-      const progress = ((300 - adTimeRemaining) / 300) * 100;
-      adProgress.style.width = progress + '%';
-
-      // Show skip button after minimum watch time (30 seconds)
-      if (adTimeRemaining <= 270) {
-        skipAdBtn.style.display = 'inline-block';
-      }
-    }
-
-    // ======================
-    // ✅ COMPLETE AD SESSION
+    // ✅ COMPLETE AD SESSION (INSTANT AWARD)
     // ======================
     async function completeAdSession() {
       if (!currentAdSession || !currentUser) return;
 
-      clearInterval(adTimerInterval);
-      
       try {
         // Update session status
         await db.collection('ad_sessions').doc(currentAdSession.sessionId).update({
@@ -552,30 +468,20 @@
           completedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Award points and update user stats
-        const batch = db.batch();
-        const userRef = db.collection('users').doc(currentUser.uid);
-        
-        batch.update(userRef, {
+        // Award points to user
+        await db.collection('users').doc(currentUser.uid).update({
           totalWatchTime: firebase.firestore.FieldValue.increment(5),
           totalPoints: firebase.firestore.FieldValue.increment(5),
           lastActive: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        await batch.commit();
+        // Close ad viewer
+        closeAdViewer();
+        
+        // Show success
+        showStatus('✅', '+5 minutes earned instantly!');
 
-        // Close ad viewer and show success
-        adViewer.classList.remove('active');
-        toggleDashboardUI(true);
-        backBtn.style.display = 'none';
-        adFrame.style.display = 'none';
-        adFrame.src = '';
-        skipAdBtn.style.display = 'none';
-
-        // Show success message with session ID
-        showStatus('✅', `+5 minutes earned! Session: ${currentAdSession.sessionId.substr(0, 8)}...`);
-
-        // Refresh user data
+        // Refresh dashboard
         await loadUserData();
 
       } catch (err) {
@@ -587,21 +493,20 @@
     }
 
     // ======================
-    // ❌ CANCEL AD SESSION
+    // ❌ CLOSE AD VIEWER
     // ======================
-    function cancelAdSession() {
-      clearInterval(adTimerInterval);
+    function closeAdViewer() {
       adViewer.classList.remove('active');
       toggleDashboardUI(true);
       backBtn.style.display = 'none';
-      adFrame.style.display = 'none';
       adFrame.src = '';
-      skipAdBtn.style.display = 'none';
+      completeAdBtn.style.display = 'none';
+      document.getElementById('adPlaceholder').style.display = 'none';
       currentAdSession = null;
     }
 
     // ======================
-    // 📺 OPEN STREAM
+    // 📺 OPEN/CLOSE STREAM
     // ======================
     function openStream(url) {
       streamFrame.src = url;
@@ -624,27 +529,28 @@
       linksList.innerHTML = '';
       linksCounter.textContent = `${links.length}/${MAX_LINKS}`;
       
+      const totalEarnedMinutes = parseInt(watchTimeStat.textContent) || 0;
+      
       links.forEach(link => {
-        const isUnlocked = link.isUnlocked || false;
+        // Unlock link if user has earned minutes
+        const isUnlocked = totalEarnedMinutes > 0;
+        if (isUnlocked && !link.isUnlocked) {
+          link.isUnlocked = true;
+        }
+        
         const statusBadge = isUnlocked ? 
           '<div class="badge" style="background: rgba(46,204,113,0.3); color: #2ecc71;">✅ Unlocked</div>' : 
           '<div class="badge">🔒 Locked</div>';
         
         const actionButton = isUnlocked ?
           `<button class="earn-btn" onclick="openStream('${link.url}')">Watch Stream</button>` :
-          `<button class="earn-btn" disabled>Locked (Watch ads)</button>`;
+          `<button class="earn-btn" disabled>Locked (Earn minutes)</button>`;
         
         const el = document.createElement('div');
         el.className = 'link-item';
         el.innerHTML = `
           <div class="link-url">${link.url}</div>
-          <div class="link-actions">
-            ${statusBadge}
-            ${actionButton}
-          </div>
-          <div style="width: 100%; font-size: 0.75rem; opacity: 0.7; margin-top: 5px;">
-            Clicks: ${link.clicks || 0} | Earned: ${link.earnedMinutes || 0} min
-          </div>
+          <div class="link-actions">${statusBadge}${actionButton}</div>
         `;
         linksList.appendChild(el);
       });
@@ -679,7 +585,7 @@
 
     function goBack() {
       if (adViewer.classList.contains('active')) {
-        cancelAdSession();
+        closeAdViewer();
       } else if (streamViewer.classList.contains('active')) {
         closeStreamViewer();
       }
@@ -699,30 +605,6 @@
 
     function generateUniqueId() {
       return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    // ======================
-    // 🛡️ RATE LIMITING & SECURITY
-    // ======================
-    async function checkRateLimit() {
-      if (!currentUser) return true;
-      
-      try {
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        const snapshot = await db.collection('ad_sessions')
-          .where('uid', '==', currentUser.uid)
-          .where('completedAt', '>=', oneHourAgo)
-          .get();
-        
-        const maxSessionsPerHour = 10; // Configurable limit
-        if (snapshot.size >= maxSessionsPerHour) {
-          showStatus('⚠️', 'Rate limit reached. Try again later.', false);
-          return false;
-        }
-      } catch (err) {
-        console.error('Rate limit check error:', err);
-      }
-      return true;
     }
   </script>
 </body>
