@@ -5,13 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>🏏 CricketStream Pro</title>
   
-  <!-- 🔥 OFFICIAL MONETAG SDK - REQUIRED -->
-  <script>
-    !function(t,n){if(t.Monetag = t.Monetag || {},!t.Monetag.load){var c=!1,i=function(){c||(c=!0,setTimeout(function(){var t=n.getElementsByTagName("script")[0],e=n.createElement("script");e.async=!0,e.src="https://libtl.com/sdk.js",t.parentNode.insertBefore(e,t)},0))};t.Monetag.load=i}}(window,document);
-    Monetag.load('10340427');
-  </script>
+  <!-- 🔥 OFFICIAL MONETAG SDK - MUST BE BELOW HEAD -->
+  <script src='//libtl.com/sdk.js' data-zone='10340427' data-sdk='show_10340427'></script>
   
   <style>
+    /* Premium Cricket Theme */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -51,14 +49,12 @@
       padding: 20px; border-radius: 15px; margin-bottom: 20px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    .ad-list { display: grid; gap: 12px; margin-bottom: 15px; }
     .ad-card {
       background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;
       display: flex; justify-content: space-between; align-items: center;
       transition: all 0.3s; cursor: pointer;
     }
     .ad-card:active { transform: scale(0.98); }
-    .ad-card.disabled { opacity: 0.5; cursor: not-allowed; }
     .ad-info h4 { color: #f39c12; margin-bottom: 5px; }
     .ad-reward .minutes { font-size: 1.8rem; font-weight: bold; color: #2ecc71; }
     .ad-button-play {
@@ -68,10 +64,9 @@
     }
     .ad-loading {
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.98); padding: 40px; border-radius: 15px;
+      background: rgba(0,0,0,0.95); padding: 40px; border-radius: 15px;
       text-align: center; z-index: 400; display: none;
     }
-    .ad-loading.show { display: block; }
     .spinner {
       border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #f39c12;
       border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
@@ -125,7 +120,7 @@
       <div class="section">
         <h3>🎯 Earn Minutes (Watch Ads)</h3>
         <div id="adsList" class="ad-list"></div>
-        <div id="adHistory"></div>
+        <div id="adHistory" class="ad-history"></div>
       </div>
 
       <!-- STREAMING LINKS SECTION -->
@@ -192,35 +187,35 @@
     // ======================
     // 🎯 AD CONFIGURATION
     // ======================
-    const MINUTES_PER_AD = 3; // 3 minutes per ad as requested
+    const MINUTES_PER_AD = 3; // Changed to 3 minutes as requested
 
-    // Ad format definitions
+    // Ad format definitions with Monetag functions
     const AD_FORMATS = [
       { 
         id: 'rewarded-interstitial', 
         name: '🏆 Rewarded Video', 
         description: 'Watch full video for max rewards',
-        playAd: () => window.show_10340427(),
+        play: () => show_10340427(),
         minutes: MINUTES_PER_AD
       },
       { 
         id: 'rewarded-popup', 
         name: '💥 Rewarded Popup', 
         description: 'Quick popup ad, instant reward',
-        playAd: () => window.show_10340427('pop'),
-        minutes: Math.floor(MINUTES_PER_AD * 0.8) // 2.4 minutes
+        play: () => show_10340427('pop'),
+        minutes: Math.floor(MINUTES_PER_AD * 0.8) // 2.4 min for popup
       },
       { 
         id: 'inapp-interstitial', 
         name: '📺 In-App Interstitial', 
         description: 'Full-screen immersive ad',
-        playAd: () => window.show_10340427({
+        play: () => show_10340427({
           type: 'inApp',
           inAppSettings: {
             frequency: 1,
-            capping: 0.1,
+            capping: 0.1,    // 6 min cooldown
             interval: 30,
-            timeout: 2,
+            timeout: 2,      // 2 sec delay
             everyPage: false
           }
         }),
@@ -275,23 +270,9 @@
     document.addEventListener('DOMContentLoaded', () => {
       initFirebaseAuth();
       setupEventListeners();
-      // Wait for Monetag SDK before loading ads
-      waitForMonetagSDK();
+      loadAdButtons();
+      loadAdHistory();
     });
-
-    function waitForMonetagSDK() {
-      const checkInterval = setInterval(() => {
-        if (typeof window.show_10340427 === 'function') {
-          clearInterval(checkInterval);
-          console.log('✅ Monetag SDK loaded');
-          if (currentUser) {
-            loadAdButtons();
-          }
-        } else {
-          console.log('⏳ Waiting for Monetag SDK...');
-        }
-      }, 500);
-    }
 
     // ======================
     // 🔐 FIREBASE AUTH
@@ -303,11 +284,6 @@
           if (telegramId) await linkTelegramAccount(user);
           await loadUserData();
           showScreen('dashboard');
-          setTimeout(() => {
-            if (typeof window.show_10340427 === 'function') {
-              loadAdButtons();
-            }
-          }, 1000);
         } else {
           showScreen('login');
         }
@@ -375,7 +351,7 @@
           item.className = 'ad-history-item';
           item.innerHTML = `
             <span>${status} <strong>${type}</strong> - +${minutes} min</span>
-            <span style="opacity:0.6;">${time}</span>
+            <span class="time">${time}</span>
           `;
           adHistoryEl.appendChild(item);
         });
@@ -392,6 +368,8 @@
       
       AD_FORMATS.forEach(format => {
         const isAvailable = checkAdAvailability(format.id);
+        const statusClass = isAvailable ? 'status-available' : 'status-cooldown';
+        const statusText = isAvailable ? 'Available' : 'Cooldown';
         
         const card = document.createElement('div');
         card.className = `ad-card ${!isAvailable ? 'disabled' : ''}`;
@@ -401,7 +379,7 @@
           <div class="ad-info">
             <h4>${format.name}</h4>
             <p>${format.description}</p>
-            <span style="font-size:0.7rem;opacity:0.7;">${isAvailable ? '🟢 Available' : '🔴 Cooldown'}</span>
+            <span class="ad-status ${statusClass}">${statusText}</span>
           </div>
           <div class="ad-reward">
             <div class="minutes">+${format.minutes}</div>
@@ -413,26 +391,31 @@
     }
 
     // ======================
-    // 🎮 PLAY MONETAG AD
+    // 🎮 PLAY MONETAG AD (CORE FUNCTION)
     // ======================
     async function playMonetagAd(format) {
+      // Prevent multiple sessions
       if (currentAdSession) {
-        showStatus('⚠️', 'Please wait for current ad', false);
+        showStatus('⚠️', 'Please wait for current ad to finish', false);
         return;
       }
 
-      // Validate SDK
-      if (typeof window.show_10340427 !== 'function') {
-        showStatus('❌', 'Ad system not ready...', false);
+      // Check if Monetag SDK is loaded
+      if (typeof show_10340427 !== 'function') {
+        showStatus('❌', 'Ad system not ready. Retrying...', false);
+        
+        // Wait for SDK to load
         setTimeout(() => {
-          if (typeof window.show_10340427 === 'function') {
-            playMonetagAd(format);
+          if (typeof show_10340427 === 'function') {
+            playMonetagAd(format); // Retry
+          } else {
+            showStatus('❌', 'Ad system failed to load. Refresh app.', false);
           }
         }, 2000);
         return;
       }
 
-      // Show loading
+      // Show loading overlay
       adLoading.classList.add('show');
 
       // Create session
@@ -447,39 +430,41 @@
       };
 
       try {
-        // Save to Firestore
+        // Save session to Firestore
         await db.collection('ad_sessions').doc(sessionId).set({
           ...currentAdSession,
           uid: currentUser.uid,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Play ad with timeout protection
-        const adPromise = format.playAd();
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Ad timeout')), 30000);
-        });
-
-        await Promise.race([adPromise, timeoutPromise]);
-        
-        // Success
-        currentAdSession.status = 'completed';
-        await completeAdReward(sessionId, format.minutes);
-
-      } catch (error) {
-        // Failure
-        currentAdSession.status = 'failed';
-        await db.collection('ad_sessions').doc(sessionId).update({
-          status: 'failed',
-          error: error.message,
-          completedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        showStatus('❌', 'Ad failed or was closed', false);
-        currentAdSession = null;
-      } finally {
+        // Hide loading before showing ad
         adLoading.classList.remove('show');
-        loadAdButtons();
+
+        // Call Monetag ad with proper error handling
+        const adPromise = format.play();
+        
+        adPromise.then(async () => {
+          // Ad completed successfully
+          currentAdSession.status = 'completed';
+          await completeAdReward(sessionId, format.minutes);
+        }).catch(async (error) => {
+          // Ad failed or user closed early
+          currentAdSession.status = 'failed';
+          await db.collection('ad_sessions').doc(sessionId).update({
+            status: 'failed',
+            error: error.message,
+            completedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          showStatus('❌', 'Ad was not completed', false);
+          currentAdSession = null;
+          loadAdButtons();
+        });
+
+      } catch (err) {
+        console.error('Monetag ad error:', err);
+        adLoading.classList.remove('show');
+        showStatus('❌', 'Failed to load ad', false);
+        currentAdSession = null;
       }
     }
 
@@ -502,19 +487,22 @@
           lastActive: firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Set cooldown
+        // Record last played time for cooldown
         localStorage.setItem(`lastAd_${currentAdSession.adId}`, Date.now().toString());
 
-        // Success
+        // Hide loading
+        adLoading.classList.remove('show');
+
+        // Show success
         showStatus('✅', `+${minutesEarned} minutes earned!`);
 
-        // Refresh
+        // Refresh data
         await loadUserData();
         await loadAdHistory();
         loadAdButtons();
 
       } catch (err) {
-        console.error('Reward error:', err);
+        console.error('Reward completion error:', err);
         showStatus('❌', 'Failed to award reward', false);
       } finally {
         currentAdSession = null;
@@ -522,71 +510,15 @@
     }
 
     // ======================
-    // ⏰ AD COOLDOWN
+    // ⏰ AD COOLDOWN CHECK
     // ======================
     function checkAdAvailability(adId) {
       const lastPlayed = localStorage.getItem(`lastAd_${adId}`);
       if (!lastPlayed) return true;
       
       const cooldownMs = 6 * 60 * 1000; // 6 minutes
-      return (Date.now() - parseInt(lastPlayed)) > cooldownMs;
-    }
-
-    // ======================
-    // ⚙️ EVENT LISTENERS
-    // ======================
-    function setupEventListeners() {
-      loginBtn.addEventListener('click', handleLogin);
-      backBtn.addEventListener('click', goBack);
-      telegramBtn.addEventListener('click', openTelegram);
-      addLinkBtn.addEventListener('click', addLink);
-      statusCloseBtn.addEventListener('click', hideStatusMessage);
-      closeStreamBtn.addEventListener('click', closeStreamViewer);
-    }
-
-    // ======================
-    // 🔑 LOGIN
-    // ======================
-    async function handleLogin() {
-      try {
-        const result = await auth.signInAnonymously();
-        currentUser = result.user;
-        if (telegramId) await linkTelegramAccount(currentUser);
-        showScreen('dashboard');
-        setTimeout(waitForMonetagSDK, 1000);
-      } catch (err) {
-        alert('Login failed: ' + err.message);
-      }
-    }
-
-    // ======================
-    // ➕ ADD STREAMING LINK
-    // ======================
-    async function addLink() {
-      const url = linkInput.value.trim();
-      if (!url) return showStatus('⚠️', 'Please enter a valid URL', false);
-      if (links.length >= MAX_LINKS) return showStatus('⚠️', `Maximum ${MAX_LINKS} links allowed`, false);
-      if (!isValidUrl(url)) return showStatus('⚠️', 'Invalid URL format', false);
-
-      const linkId = generateUniqueId();
-      const newLink = {
-        id: linkId,
-        url,
-        addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        clicks: 0,
-        isUnlocked: false
-      };
-      links.push(newLink);
-
-      try {
-        await db.collection('users').doc(currentUser.uid).set({ linksAdded: links }, { merge: true });
-        linkInput.value = '';
-        updateLinksDisplay();
-        linksCountStat.textContent = links.length;
-        showStatus('✅', 'Link added successfully!');
-      } catch (err) {
-        showStatus('❌', 'Failed to add link', false);
-      }
+      const now = Date.now();
+      return (now - parseInt(lastPlayed)) > cooldownMs;
     }
 
     // ======================
@@ -617,6 +549,12 @@
       
       links.forEach(link => {
         const isUnlocked = totalEarnedMinutes >= MINUTES_PER_AD;
+        if (isUnlocked && !link.isUnlocked) {
+          link.isUnlocked = true;
+          db.collection('users').doc(currentUser.uid).set({
+            linksAdded: links
+          }, { merge: true });
+        }
         
         const statusBadge = isUnlocked ? 
           '<div class="badge" style="background: rgba(46,204,113,0.3); color: #2ecc71;">✅ Ready</div>' : 
@@ -637,9 +575,8 @@
     }
 
     function toggleDashboardUI(show) {
-      document.querySelectorAll('.user-stats, .section').forEach(el => {
-        el.style.display = show ? '' : 'none';
-      });
+      const elements = document.querySelectorAll('.user-stats, .section');
+      elements.forEach(el => el.style.display = show ? '' : 'none');
     }
 
     function showStatus(icon, text, autoHide = true) {
@@ -682,9 +619,7 @@
     // 🔁 PERIODIC REFRESH
     // ======================
     setInterval(() => {
-      if (currentUser && typeof window.show_10340427 === 'function') {
-        loadAdButtons();
-      }
+      if (currentUser) loadAdButtons();
     }, 30000);
   </script>
 </body>
