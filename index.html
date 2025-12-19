@@ -1,184 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <style>
-    body { margin: 0; background: #000; overflow: hidden; }
-    #container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    video { 
-      width: 100%; 
-      height: 100vh; 
-      background: #000; 
-      display: block; /* Always visible */
-    }
-    #loading {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      color: #fff;
-      text-align: center;
-      z-index: 10;
-    }
-    #play-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-      cursor: pointer;
-    }
-    #play-button {
-      width: 80px; height: 80px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-    }
-    #debug {
-      position: fixed;
-      top: 10px; left: 10px;
-      color: #0f0; font-size: 11px;
-      font-family: monospace;
-      background: rgba(0,0,0,0.8);
-      padding: 8px;
-      max-width: 90vw;
-      z-index: 100;
-      pointer-events: none;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
-<body>
-  <div id="container">
-    <div id="loading">
-      <h3>Loading PTV Sports...</h3>
-      <p id="status">Initializing HLS...</p>
-    </div>
-    
-    <!-- Video always visible -->
-    <video id="video" controls></video>
-    
-    <!-- Big play button overlay -->
-    <div id="play-overlay" style="display:none;">
-      <div id="play-button">▶️</div>
-    </div>
-    
-    <!-- Debug info -->
-    <pre id="debug"></pre>
-  </div>
 
-  <script>
-    const debug = document.getElementById('debug');
-    const status = document.getElementById('status');
-    const loading = document.getElementById('loading');
-    const playOverlay = document.getElementById('play-overlay');
-    const video = document.getElementById('video');
-    
-    function log(msg) {
-      console.log(msg);
-      debug.textContent += msg + '\n';
-      status.textContent = msg;
-    }
+<body style="margin:0;background:black;">
 
-    // URLs (no spaces!)
-    const originalUrl = 'https://d10.merichunidya.com:1686/hls/willowusa.m3u8?md5=KX-v6eohZQL7fB827l7M0w&expires=1766149086'.trim();
-    const proxyUrl = `https://hls-proxy.samaraedirisooriya123.workers.dev?url=${encodeURIComponent(originalUrl)}`;
-    
-    log('=== DEBUG INFO ===');
-    log('Proxy: ' + proxyUrl);
-    log('User-Agent: ' + navigator.userAgent);
+<video id="player"
+  controls
+  muted
+  autoplay
+  playsinline
+  style="width:100%;height:100vh;">
+</video>
 
-    // Telegram setup
-    if (window.Telegram?.WebApp) {
-      Telegram.WebApp.ready();
-      Telegram.WebApp.expand();
-      log('✅ Telegram WebApp ready');
-    } else {
-      log('⚠️ Not in Telegram');
-    }
+<script>
+const video = document.getElementById("player");
 
-    // HLS setup
-    if (Hls.isSupported()) {
-      log('✅ HLS.js supported');
-      
-      const hls = new Hls({
-        debug: true, // Keep debug on for now
-        enableWorker: true,
-        maxBufferLength: 30,
-        xhrSetup: (xhr, url) => {
-          log(`📡 Loading: ${url.substring(0, 60)}...`);
-        }
-      });
-      
-      hls.loadSource(proxyUrl);
-      hls.attachMedia(video);
-      
-      hls.on(Hls.Events.MEDIA_ATTACHED, () => log('✅ Media attached'));
-      hls.on(Hls.Events.MANIFEST_LOADING, () => log('📥 Loading manifest...'));
-      hls.on(Hls.Events.MANIFEST_LOADED, () => log('✅ Manifest loaded'));
-      hls.on(Hls.Events.MANIFEST_PARSED, () => log('✅ Manifest parsed - ready to play'));
-      
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        log(`❌ ERROR: ${data.type} - ${data.details}`);
-        if (data.fatal) {
-          log('🔥 FATAL ERROR - Stream stopped');
-        }
-      });
+const STREAM =
+"https://hls-proxy.yourname.workers.dev/?url=" +
+encodeURIComponent(
+  "https://d7.merichunidya.com:1686/hls/willowusa.m3u8"
+);
 
-      // When manifest is ready, show play button
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        loading.style.display = 'none';
-        playOverlay.style.display = 'flex'; // Show play overlay
-        
-        // Also try autoplay (will likely fail, but we try)
-        video.play().then(() => {
-          log('🎉 Autoplay succeeded!');
-          playOverlay.style.display = 'none';
-        }).catch(() => {
-          log('ℹ️ Autoplay blocked - waiting for tap');
-        });
-      });
-      
-    } else {
-      log('❌ HLS not supported - trying native');
-      video.src = proxyUrl;
-      video.addEventListener('loadedmetadata', () => {
-        loading.style.display = 'none';
-        playOverlay.style.display = 'flex';
-      });
-    }
+if (Hls.isSupported()) {
+  const hls = new Hls({
+    lowLatencyMode: true,
+    enableWorker: true
+  });
+  hls.loadSource(STREAM);
+  hls.attachMedia(video);
+} else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+  video.src = STREAM;
+}
+</script>
 
-    // Play button click handler
-    playOverlay.addEventListener('click', () => {
-      log('🖱️ Play button tapped');
-      video.play().then(() => {
-        log('🎬 Playback started!');
-        playOverlay.style.display = 'none';
-      }).catch(err => {
-        log('❌ Play failed: ' + err.message);
-      });
-    });
-
-    // Video event listeners
-    video.addEventListener('play', () => log('▶️ Video playing'));
-    video.addEventListener('pause', () => log('⏸️ Video paused'));
-    video.addEventListener('waiting', () => log('⏳ Buffering...'));
-    video.addEventListener('playing', () => log('✅ Playback smooth'));
-    video.addEventListener('error', (e) => log('❌ Video error: ' + e.message));
-  </script>
 </body>
 </html>
