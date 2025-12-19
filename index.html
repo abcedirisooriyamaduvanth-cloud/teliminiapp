@@ -22,56 +22,18 @@ body {
   color: #fff;
 }
 
-.app {
-  padding: 16px;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card {
-  background: rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 14px;
-  animation: fadeUp .5s ease;
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  margin-top: 10px;
-  background: linear-gradient(135deg,#00c6ff,#0072ff);
-  border: none;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.loader {
-  display: none;
-  text-align: center;
-  margin-top: 10px;
-}
-
-@keyframes fadeUp {
-  from {opacity:0; transform:translateY(20px)}
-  to {opacity:1; transform:translateY(0)}
-}
+.app { padding: 16px; }
+.header { display: flex; justify-content: space-between; align-items: center; }
+.card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-top: 14px; animation: fadeUp .5s ease; }
+.btn { width: 100%; padding: 14px; margin-top: 10px; background: linear-gradient(135deg,#00c6ff,#0072ff); border: none; border-radius: 12px; color: #fff; font-size: 16px; cursor: pointer; }
+.btn:active { transform: scale(0.97); }
+.loader { display: none; text-align: center; margin-top: 10px; }
+@keyframes fadeUp { from {opacity:0; transform:translateY(20px)} to {opacity:1; transform:translateY(0)} }
 </style>
 </head>
 
 <body>
 <div class="app">
-
   <div class="header">
     <h3>🏏 Cricket Rewards</h3>
     <span id="username"></span>
@@ -85,13 +47,10 @@ body {
 
   <div class="card">
     <h4>Earn Minutes</h4>
-
     <button class="btn" onclick="watchRewarded()">🎬 Watch Ad ( +2 min )</button>
     <button class="btn" onclick="watchPopup()">🔥 Popup Ad ( +1 min )</button>
-
     <div class="loader" id="loader">Loading Ad...</div>
   </div>
-
 </div>
 
 <script>
@@ -141,31 +100,49 @@ function reward(minutes) {
     if (!d) return d;
     d.totalMinutes += minutes;
     d.adViews += 1;
-    d.totalEarnings += minutes * 0.02; // example
+    d.totalEarnings += minutes * 0.02; // example rate
     d.lastEarnedAt = Date.now();
     return d;
   });
 }
 
 /* ---------------- ADS ---------------- */
+function loader(show) {
+  document.getElementById("loader").style.display = show ? "block" : "none";
+}
+
+// Rewarded Interstitial
 function watchRewarded() {
   loader(true);
   show_10340427().then(() => {
     reward(2);
     alert("🎉 You earned 2 minutes!");
+    showInApp(); // Trigger in-app after rewarded
   }).finally(() => loader(false));
 }
 
+// Rewarded Popup
 function watchPopup() {
   loader(true);
   show_10340427('pop').then(() => {
     reward(1);
     alert("🔥 You earned 1 minute!");
+    showInApp(); // Trigger in-app after popup
   }).finally(() => loader(false));
 }
 
-function loader(show) {
-  document.getElementById("loader").style.display = show ? "block" : "none";
+// In-App Interstitial
+function showInApp() {
+  show_10340427({
+    type: 'inApp',
+    inAppSettings: {
+      frequency: 2,
+      capping: 0.1,
+      interval: 30,
+      timeout: 5,
+      everyPage: false
+    }
+  });
 }
 </script>
 
