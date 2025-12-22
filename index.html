@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8" />
 <title>Cricket Rewards</title>
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -15,23 +14,19 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(180deg,#0b1020,#050814);
-  color: #fff;
-}
-
+body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#0b1020,#050814); color: #fff; }
 .app { padding: 16px; }
 .header { display: flex; justify-content: space-between; align-items: center; }
 .card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-top: 14px; animation: fadeUp .5s ease; }
 .btn { width: 100%; padding: 14px; margin-top: 10px; background: linear-gradient(135deg,#00c6ff,#0072ff); border: none; border-radius: 12px; color: #fff; font-size: 16px; cursor: pointer; }
 .btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .loader { display: none; text-align: center; margin-top: 10px; }
+.status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.channel-card { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid #4a6572; margin-bottom: 12px; }
 @keyframes fadeUp { from {opacity:0; transform:translateY(20px)} to {opacity:1; transform:translateY(0)} }
 </style>
 </head>
-
 <body>
 <div class="app">
   <div class="header">
@@ -47,9 +42,57 @@ body {
 
   <div class="card">
     <h4>Earn Minutes</h4>
-    <button class="btn" onclick="watchRewarded()">🎬 Watch Ad ( +2 min )</button>
-    <button class="btn" onclick="watchPopup()">🔥 Popup Ad ( +1 min )</button>
+    <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
+    <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
     <div class="loader" id="loader">Loading Ad...</div>
+  </div>
+
+  <div class="card">
+    <h4>🏆 LIVE Cricket Matches</h4>
+    <div style="background: rgba(255,50,50,0.15); border-left: 3px solid #ff4d4d; padding: 10px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 14px;">
+      <strong>⚠️ SECURITY WARNING:</strong> Invite links expire in 60 seconds and only work for your account. Sharing links will get you permanently banned!
+    </div>
+    
+    <div style="display: grid; gap: 12px; margin-top: 12px;">
+      <!-- Match 1 -->
+      <div class="channel-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 India vs Australia</h4>
+          <span class="status-indicator" id="status-match1" style="background: #ff4d4d;"></span>
+        </div>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_01</p>
+        <p style="margin: 0 0 8px 0; font-size: 13px;">
+          <span id="req-match1" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
+        </p>
+        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#ff6b6b,#ee5a24);" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
+      </div>
+      
+      <!-- Match 2 -->
+      <div class="channel-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 England vs South Africa</h4>
+          <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
+        </div>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_02</p>
+        <p style="margin: 0 0 8px 0; font-size: 13px;">
+          <span id="req-match2" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
+        </p>
+        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#48dbfb,#1e90ff);" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
+      </div>
+      
+      <!-- Match 3 -->
+      <div class="channel-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Pakistan vs New Zealand</h4>
+          <span class="status-indicator" id="status-match3" style="background: #ff4d4d;"></span>
+        </div>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_03</p>
+        <p style="margin: 0 0 8px 0; font-size: 13px;">
+          <span id="req-match3" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
+        </p>
+        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#1dd1a1,#10ac84);" onclick="joinChannel('match3')" id="btn-match3">Join Match</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -57,7 +100,6 @@ body {
 /* ---------------- TELEGRAM USER ---------------- */
 const tg = Telegram.WebApp;
 tg.ready();
-
 const user = tg.initDataUnsafe.user;
 document.getElementById("username").innerText = "@" + (user.username || "player");
 
@@ -66,12 +108,19 @@ const firebaseConfig = {
   apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
   authDomain: "cricketteligram.firebaseapp.com",
   databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com",
-  projectId: "cricketteligram"
+  projectId: "cricketteligram",
+  storageBucket: "cricketteligram.appspot.com"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const userRef = db.ref("users/" + user.id);
+
+/* ---------------- CHANNEL NAMES ---------------- */
+const CHANNEL_NAMES = {
+  match1: 'India vs Australia',
+  match2: 'England vs South Africa', 
+  match3: 'Pakistan vs New Zealand'
+};
 
 /* ---------------- INIT USER ---------------- */
 userRef.once("value").then(snap => {
@@ -83,15 +132,18 @@ userRef.once("value").then(snap => {
       totalMinutes: 0,
       totalEarnings: 0,
       adViews: 0,
-      lastEarnedAt: Date.now()
+      lastEarnedAt: Date.now(),
+      joinedChannels: {}
     });
   }
 });
 
 userRef.on("value", snap => {
   const d = snap.val();
+  if (!d) return;
   document.getElementById("minutes").innerText = d.totalMinutes;
   document.getElementById("earnings").innerText = d.totalEarnings.toFixed(2);
+  updateChannelButtons(d.totalMinutes, d.joinedChannels || {});
 });
 
 /* ---------------- REWARD LOGIC ---------------- */
@@ -100,7 +152,7 @@ function reward(minutes) {
     if (!d) return d;
     d.totalMinutes += minutes;
     d.adViews += 1;
-    d.totalEarnings += minutes * 0.02; // example rate
+    d.totalEarnings += minutes * 0.02;
     d.lastEarnedAt = Date.now();
     return d;
   });
@@ -111,39 +163,106 @@ function loader(show) {
   document.getElementById("loader").style.display = show ? "block" : "none";
 }
 
-// Rewarded Interstitial
 function watchRewarded() {
   loader(true);
   show_10340427().then(() => {
     reward(2);
     alert("🎉 You earned 2 minutes!");
-    showInApp(); // Trigger in-app after rewarded
-  }).finally(() => loader(false));
+    loader(false);
+  }).catch(() => loader(false));
 }
 
-// Rewarded Popup
 function watchPopup() {
   loader(true);
   show_10340427('pop').then(() => {
     reward(1);
     alert("🔥 You earned 1 minute!");
-    showInApp(); // Trigger in-app after popup
-  }).finally(() => loader(false));
+    loader(false);
+  }).catch(() => loader(false));
 }
 
-// In-App Interstitial
-function showInApp() {
-  show_10340427({
-    type: 'inApp',
-    inAppSettings: {
-      frequency: 2,
-      capping: 0.1,
-      interval: 30,
-      timeout: 5,
-      everyPage: false
+/* ---------------- CHANNEL BUTTONS ---------------- */
+function updateChannelButtons(minutes, joinedChannels) {
+  Object.keys(CHANNEL_NAMES).forEach(channel => {
+    const btn = document.getElementById(`btn-${channel}`);
+    const reqText = document.getElementById(`req-${channel}`);
+    const status = document.getElementById(`status-${channel}`);
+    if (!btn || !reqText || !status) return;
+    
+    const isJoined = joinedChannels[channel] && joinedChannels[channel].joinedAt;
+    
+    if (isJoined) {
+      status.style.background = "#00ff00";
+      btn.innerHTML = "✅ JOINED";
+      btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
+      btn.disabled = true;
+      reqText.innerHTML = "✅ ACCESS ACTIVE";
+      reqText.style.color = "#00ff00";
+    } else if (minutes >= 15) {
+      status.style.background = "#00ff00";
+      btn.innerHTML = "🔓 JOIN NOW";
+      btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
+      btn.disabled = false;
+      reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
+      reqText.style.color = "#00ff00";
+    } else {
+      status.style.background = "#ffcc00";
+      btn.innerHTML = "🔒 LOCKED";
+      btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
+      btn.disabled = true;
+      reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
+      reqText.style.color = "#ffcc00";
     }
   });
 }
+
+/* ---------------- JOIN CHANNEL ---------------- */
+async function joinChannel(channelId) {
+  if (!user) {
+    alert('❌ Please open from Telegram');
+    return;
+  }
+
+  const channelName = CHANNEL_NAMES[channelId];
+  const btn = document.getElementById(`btn-${channelId}`);
+  btn.innerHTML = '⏳ Generating...';
+  btn.disabled = true;
+
+  try {
+    // Call YOUR DigitalOcean API
+    const response = await fetch('https://167.71.237.177:3000/api/generate-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, channelId })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Access denied');
+    }
+
+    // Open secure link
+    window.open(data.inviteLink, '_blank');
+    
+    // Update UI immediately
+    const updatedChannels = { ...(userData?.joinedChannels || {}) };
+    updatedChannels[channelId] = { joinedAt: Date.now(), channelName };
+    userRef.update({ joinedChannels: updatedChannels });
+    
+    alert(`✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!`);
+
+  } catch (error) {
+    alert(`❌ ${error.message}`);
+    updateChannelButtons(
+      parseInt(document.getElementById("minutes").innerText), 
+      userData?.joinedChannels || {}
+    );
+  }
+}
+
+/* ---------------- THEME ---------------- */
+document.documentElement.style.colorScheme = 'dark';
 </script>
 
 </body>
