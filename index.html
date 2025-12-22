@@ -230,7 +230,7 @@ async function joinChannel(channelId) {
 
   try {
     // Call YOUR DigitalOcean API
-    const response = await fetch('https://167.71.237.177:3000/api/generate-invite', {
+    const response = await fetch('https://143.110.254.170:3000/api/generate-invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: user.id, channelId })
