@@ -82,6 +82,11 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       
     </div>
   </div>
+  
+  <div class="card">
+    <h4>Debug Log</h4>
+    <pre id="debug" style="max-height:200px; overflow:auto; white-space:pre-wrap; background: rgba(0,0,0,0.12); padding: 8px; border-radius: 8px; font-size:12px; color:#fff;"></pre>
+  </div>
 </div>
 
 <script>
@@ -108,6 +113,17 @@ const CHANNEL_NAMES = {
   match1: 'India vs Australia',
   match2: 'England vs South Africa'
 };
+
+/* ---------------- DEBUG HELPERS ---------------- */
+function debugLog(label, obj) {
+  try {
+    const el = document.getElementById('debug');
+    if (!el) return;
+    const time = new Date().toLocaleTimeString();
+    const entry = `[${time}] ${label}: ` + (obj === undefined ? '' : (typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2))) + "\n";
+    el.textContent = entry + el.textContent;
+  } catch (e) { /* ignore */ }
+}
 
 /* ---------------- INIT USER ---------------- */
 userRef.once("value").then(snap => {
@@ -229,16 +245,25 @@ async function joinChannel(channelId) {
 
   try {
     // Try primary endpoint first
-    let response = await fetch(primary, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    debugLog('POST -> primary', { url: primary, payload });
+    let response;
+    try {
+      response = await fetch(primary, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } catch (netErr) {
+      debugLog('Network error on primary fetch', netErr.message || netErr);
+      throw netErr;
+    }
 
     let data = {};
     try { data = await response.json(); } catch(e) { data = {}; }
+    debugLog('Primary response', { ok: response.ok, status: response.status, data });
 
     if (response.ok && data.inviteLink) {
+      debugLog('Opening invite', data.inviteLink);
       window.open(data.inviteLink, '_blank');
       markJoined();
       alert('✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
@@ -253,31 +278,35 @@ async function joinChannel(channelId) {
     }
 
     // Try fallback endpoint (may be blocked by mixed-content if page is HTTPS)
+    debugLog('POST -> fallback', { url: fallback, payload });
     try {
       response = await fetch(fallback, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      data = await response.json();
-
-      if (response.ok && data.inviteLink) {
-        window.open(data.inviteLink, '_blank');
-        markJoined();
-        alert('✅ Link generated (fallback)! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
-        return;
-      }
-
-      if (data && data.error && /already/i.test(data.error)) {
-        markJoined();
-        alert('ℹ️ You are already a member. Access marked as joined.');
-        return;
-      }
-
-      throw new Error(data.error || 'No invite link returned');
-    } catch (fbErr) {
-      throw fbErr;
+    } catch (netErr) {
+      debugLog('Network error on fallback fetch', netErr.message || netErr);
+      throw netErr;
     }
+
+    try { data = await response.json(); } catch(e) { data = {}; }
+    debugLog('Fallback response', { ok: response.ok, status: response.status, data });
+
+    if (response.ok && data.inviteLink) {
+      window.open(data.inviteLink, '_blank');
+      markJoined();
+      alert('✅ Link generated (fallback)! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
+      return;
+    }
+
+    if (data && data.error && /already/i.test(data.error)) {
+      markJoined();
+      alert('ℹ️ You are already a member. Access marked as joined.');
+      return;
+    }
+
+    throw new Error(data.error || 'No invite link returned');
 
   } catch (error) {
     alert(`❌ ${error.message}`);
