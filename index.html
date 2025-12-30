@@ -95,6 +95,10 @@ const tg = Telegram.WebApp;
 tg.ready();
 const user = tg.initDataUnsafe.user;
 document.getElementById("username").innerText = "@" + (user.username || "player");
+// initial environment debug info
+debugLog('Page origin', location.origin);
+debugLog('User agent', navigator.userAgent);
+try { debugLog('Telegram initDataUnsafe', tg.initDataUnsafe); } catch(e) { debugLog('Telegram initDataUnsafe', 'unavailable'); }
 
 /* ---------------- FIREBASE ---------------- */
 const firebaseConfig = {
@@ -247,15 +251,25 @@ async function joinChannel(channelId) {
     // Try primary endpoint first
     debugLog('POST -> primary', { url: primary, payload });
     let response;
-    try {
-      response = await fetch(primary, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (netErr) {
-      debugLog('Network error on primary fetch', netErr.message || netErr);
-      throw netErr;
+    // Try primary endpoint with one retry for transient/preflight issues
+    let attempt = 0;
+    while (attempt < 2) {
+      attempt += 1;
+      try {
+        debugLog('Fetch attempt', { attempt, url: primary, online: navigator.onLine });
+        response = await fetch(primary, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        break;
+      } catch (netErr) {
+        debugLog('Network error on primary fetch', { attempt, err: netErr.message || String(netErr) });
+        if (attempt >= 2) throw netErr;
+        // small backoff before retry
+        await new Promise(r => setTimeout(r, 350));
+      }
     }
 
     let data = {};

@@ -105,10 +105,55 @@ async function getFirebaseToken(serviceAccountJson) {
   if (!serviceAccountJson) return null;
   try {
     const account = JSON.parse(serviceAccountJson);
-    // For production: sign a JWT with account.private_key using RS256 (Web Crypto), exchange for access token
-    // Placeholder returns null so the Worker won't fail — implement signing for real access.
-    return null;
+
+    const now = Math.floor(Date.now() / 1000);
+    const header = { alg: 'RS256', typ: 'JWT' };
+    const claimSet = {
+      iss: account.client_email,
+      scope: 'https://www.googleapis.com/auth/firebase.database https://www.googleapis.com/auth/userinfo.email',
+      aud: 'https://oauth2.googleapis.com/token',
+      exp: now + 3600,
+      iat: now
+    };
+
+    function base64url(input) {
+      return Buffer.from(input).toString('base64')
+        .replace(/=/g, '')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+    }
+
+    const unsignedJwt = base64url(JSON.stringify(header)) + '.' + base64url(JSON.stringify(claimSet));
+
+    // Convert PEM private key to ArrayBuffer
+    function pemToArrayBuffer(pem) {
+      const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, '').replace(/-----END PRIVATE KEY-----/, '').replace(/\s+/g, '');
+      const binary = atob(b64);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes.buffer;
+    }
+
+    // Sign using Web Crypto
+    const keyData = pemToArrayBuffer(account.private_key);
+    const cryptoKey = await crypto.subtle.importKey('pkcs8', keyData, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+    const sig = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, new TextEncoder().encode(unsignedJwt));
+    const sigB64 = base64url(String.fromCharCode.apply(null, new Uint8Array(sig)));
+    const signedJwt = unsignedJwt + '.' + sigB64;
+
+    // Exchange JWT for access token
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${encodeURIComponent(signedJwt)}`
+    });
+
+    if (!tokenRes.ok) return null;
+    const tokenData = await tokenRes.json();
+    return tokenData.access_token;
   } catch (e) {
+    console.error('getFirebaseToken error', e);
     return null;
   }
 }
