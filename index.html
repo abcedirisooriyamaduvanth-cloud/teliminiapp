@@ -239,7 +239,8 @@ async function joinChannel(channelId) {
 
   const payload = { userId: String(user.id), channelId };
   const primary = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
-  const fallback = 'http://143.110.254.170:3000/api/generate-invite';
+  
+  // REMOVED: HTTP fallback won't work from HTTPS GitHub Pages
 
   function markJoined() {
     const updatedChannels = { ...((window.userData && window.userData.joinedChannels) || {}) };
@@ -248,33 +249,17 @@ async function joinChannel(channelId) {
   }
 
   try {
-    // Try primary endpoint first
-    debugLog('POST -> primary', { url: primary, payload });
-    let response;
-    // Try primary endpoint with one retry for transient/preflight issues
-    let attempt = 0;
-    while (attempt < 2) {
-      attempt += 1;
-      try {
-        debugLog('Fetch attempt', { attempt, url: primary, online: navigator.onLine });
-        response = await fetch(primary, {
-          method: 'POST',
-          mode: 'cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        break;
-      } catch (netErr) {
-        debugLog('Network error on primary fetch', { attempt, err: netErr.message || String(netErr) });
-        if (attempt >= 2) throw netErr;
-        // small backoff before retry
-        await new Promise(r => setTimeout(r, 350));
-      }
-    }
+    debugLog('POST -> Worker', { url: primary, payload });
+    
+    const response = await fetch(primary, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-    let data = {};
-    try { data = await response.json(); } catch(e) { data = {}; }
-    debugLog('Primary response', { ok: response.ok, status: response.status, data });
+    const data = await response.json().catch(() => ({}));
+    debugLog('Worker response', { ok: response.ok, status: response.status, data });
 
     if (response.ok && data.inviteLink) {
       debugLog('Opening invite', data.inviteLink);
@@ -284,48 +269,18 @@ async function joinChannel(channelId) {
       return;
     }
 
-    // If primary says user already a member, mark as joined
-    if (data && data.error && /already/i.test(data.error)) {
+    if (data?.error && /already/i.test(data.error)) {
       markJoined();
       alert('ℹ️ You are already a member. Access marked as joined.');
       return;
     }
 
-    // Try fallback endpoint (may be blocked by mixed-content if page is HTTPS)
-    debugLog('POST -> fallback', { url: fallback, payload });
-    try {
-      response = await fetch(fallback, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } catch (netErr) {
-      debugLog('Network error on fallback fetch', netErr.message || netErr);
-      throw netErr;
-    }
-
-    try { data = await response.json(); } catch(e) { data = {}; }
-    debugLog('Fallback response', { ok: response.ok, status: response.status, data });
-
-    if (response.ok && data.inviteLink) {
-      window.open(data.inviteLink, '_blank');
-      markJoined();
-      alert('✅ Link generated (fallback)! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
-      return;
-    }
-
-    if (data && data.error && /already/i.test(data.error)) {
-      markJoined();
-      alert('ℹ️ You are already a member. Access marked as joined.');
-      return;
-    }
-
-    throw new Error(data.error || 'No invite link returned');
+    throw new Error(data.error || `HTTP ${response.status}: No invite link returned`);
 
   } catch (error) {
-    alert(`❌ ${error.message}`);
+    debugLog('CRITICAL ERROR', error.message);
+    alert(`❌ ${error.message}\n\nCheck debug log for details.`);
   } finally {
-    // refresh buttons based on latest DB snapshot
     updateChannelButtons(
       parseInt(document.getElementById("minutes").innerText) || 0,
       (window.userData && window.userData.joinedChannels) || {}

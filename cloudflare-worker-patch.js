@@ -4,12 +4,12 @@
 
 export default {
   async fetch(request, env, ctx) {
-    const origin = request.headers.get('Origin') || '*';
+    // Disable CORS protection: allow any origin
+    // Note: Access-Control-Allow-Credentials cannot be used with '*'
     const corsHeaders = {
-      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Allow-Credentials': 'true'
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     };
 
     // Reply to preflight
