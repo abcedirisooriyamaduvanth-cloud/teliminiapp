@@ -80,18 +80,6 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
         <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#48dbfb,#1e90ff);" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
       </div>
       
-      <!-- Match 3 -->
-      <div class="channel-card">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
-          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Pakistan vs New Zealand</h4>
-          <span class="status-indicator" id="status-match3" style="background: #ff4d4d;"></span>
-        </div>
-        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_03</p>
-        <p style="margin: 0 0 8px 0; font-size: 13px;">
-          <span id="req-match3" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
-        </p>
-        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#1dd1a1,#10ac84);" onclick="joinChannel('match3')" id="btn-match3">Join Match</button>
-      </div>
     </div>
   </div>
 </div>
@@ -118,8 +106,7 @@ const userRef = db.ref("users/" + user.id);
 /* ---------------- CHANNEL NAMES ---------------- */
 const CHANNEL_NAMES = {
   match1: 'India vs Australia',
-  match2: 'England vs South Africa', 
-  match3: 'Pakistan vs New Zealand'
+  match2: 'England vs South Africa'
 };
 
 /* ---------------- INIT USER ---------------- */
@@ -141,6 +128,8 @@ userRef.once("value").then(snap => {
 userRef.on("value", snap => {
   const d = snap.val();
   if (!d) return;
+  // keep latest user snapshot globally available for join logic
+  window.userData = d;
   document.getElementById("minutes").innerText = d.totalMinutes;
   document.getElementById("earnings").innerText = d.totalEarnings.toFixed(2);
   updateChannelButtons(d.totalMinutes, d.joinedChannels || {});
@@ -228,36 +217,77 @@ async function joinChannel(channelId) {
   btn.innerHTML = '⏳ Generating...';
   btn.disabled = true;
 
-  try {
-    // Call YOUR DigitalOcean API
-    const response = await fetch('https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id, channelId })
-    });
+  const payload = { userId: String(user.id), channelId };
+  const primary = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
+  const fallback = 'http://143.110.254.170:3000/api/generate-invite';
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Access denied');
-    }
-
-    // Open secure link
-    window.open(data.inviteLink, '_blank');
-    
-    // Update UI immediately
-    const updatedChannels = { ...(userData?.joinedChannels || {}) };
+  function markJoined() {
+    const updatedChannels = { ...((window.userData && window.userData.joinedChannels) || {}) };
     updatedChannels[channelId] = { joinedAt: Date.now(), channelName };
     userRef.update({ joinedChannels: updatedChannels });
-    
-    alert(`✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!`);
+  }
+
+  try {
+    // Try primary endpoint first
+    let response = await fetch(primary, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    let data = {};
+    try { data = await response.json(); } catch(e) { data = {}; }
+
+    if (response.ok && data.inviteLink) {
+      window.open(data.inviteLink, '_blank');
+      markJoined();
+      alert('✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
+      return;
+    }
+
+    // If primary says user already a member, mark as joined
+    if (data && data.error && /already/i.test(data.error)) {
+      markJoined();
+      alert('ℹ️ You are already a member. Access marked as joined.');
+      return;
+    }
+
+    // Try fallback endpoint (may be blocked by mixed-content if page is HTTPS)
+    try {
+      response = await fetch(fallback, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      data = await response.json();
+
+      if (response.ok && data.inviteLink) {
+        window.open(data.inviteLink, '_blank');
+        markJoined();
+        alert('✅ Link generated (fallback)! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
+        return;
+      }
+
+      if (data && data.error && /already/i.test(data.error)) {
+        markJoined();
+        alert('ℹ️ You are already a member. Access marked as joined.');
+        return;
+      }
+
+      throw new Error(data.error || 'No invite link returned');
+    } catch (fbErr) {
+      throw fbErr;
+    }
 
   } catch (error) {
     alert(`❌ ${error.message}`);
+  } finally {
+    // refresh buttons based on latest DB snapshot
     updateChannelButtons(
-      parseInt(document.getElementById("minutes").innerText), 
-      userData?.joinedChannels || {}
+      parseInt(document.getElementById("minutes").innerText) || 0,
+      (window.userData && window.userData.joinedChannels) || {}
     );
+    btn.disabled = false;
   }
 }
 
