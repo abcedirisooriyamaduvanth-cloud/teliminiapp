@@ -5,15 +5,11 @@
 <title>Cricket Rewards</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Monetag -->
-<script src="//libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
+/* ... your existing styles ... */
 body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#0b1020,#050814); color: #fff; }
 .app { padding: 16px; }
 .header { display: flex; justify-content: space-between; align-items: center; }
@@ -30,7 +26,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
 <body>
 <div class="app">
   <div class="header">
-    <h3>🏏 Cricket Rewards samara</h3>
+    <h3>🏏 Cricket Rewards</h3>
     <span id="username"></span>
   </div>
 
@@ -79,7 +75,6 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
         </p>
         <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#48dbfb,#1e90ff);" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
       </div>
-      
     </div>
   </div>
   
@@ -95,10 +90,6 @@ const tg = Telegram.WebApp;
 tg.ready();
 const user = tg.initDataUnsafe.user;
 document.getElementById("username").innerText = "@" + (user.username || "player");
-// initial environment debug info
-debugLog('Page origin', location.origin);
-debugLog('User agent', navigator.userAgent);
-try { debugLog('Telegram initDataUnsafe', tg.initDataUnsafe); } catch(e) { debugLog('Telegram initDataUnsafe', 'unavailable'); }
 
 /* ---------------- FIREBASE ---------------- */
 const firebaseConfig = {
@@ -143,16 +134,22 @@ userRef.once("value").then(snap => {
       joinedChannels: {}
     });
   }
+  debugLog('User initialized', user.id);
 });
 
 userRef.on("value", snap => {
   const d = snap.val();
   if (!d) return;
-  // keep latest user snapshot globally available for join logic
+  
+  debugLog('Firebase update', {
+    minutes: d.totalMinutes,
+    channels: Object.keys(d.joinedChannels || {})
+  });
+  
   window.userData = d;
-  document.getElementById("minutes").innerText = d.totalMinutes;
-  document.getElementById("earnings").innerText = d.totalEarnings.toFixed(2);
-  updateChannelButtons(d.totalMinutes, d.joinedChannels || {});
+  document.getElementById("minutes").innerText = d.totalMinutes || 0;
+  document.getElementById("earnings").innerText = (d.totalEarnings || 0).toFixed(2);
+  updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
 });
 
 /* ---------------- REWARD LOGIC ---------------- */
@@ -176,7 +173,7 @@ function watchRewarded() {
   loader(true);
   show_10340427().then(() => {
     reward(2);
-    alert("🎉 You earned 2 minutes!");
+    alert("🎉 +2 minutes earned!");
     loader(false);
   }).catch(() => loader(false));
 }
@@ -185,7 +182,7 @@ function watchPopup() {
   loader(true);
   show_10340427('pop').then(() => {
     reward(1);
-    alert("🔥 You earned 1 minute!");
+    alert("🔥 +1 minute earned!");
     loader(false);
   }).catch(() => loader(false));
 }
@@ -198,9 +195,10 @@ function updateChannelButtons(minutes, joinedChannels) {
     const status = document.getElementById(`status-${channel}`);
     if (!btn || !reqText || !status) return;
     
-    const isJoined = joinedChannels[channel] && joinedChannels[channel].joinedAt;
+    const isJoined = joinedChannels && joinedChannels[channel] && joinedChannels[channel].joinedAt;
     
     if (isJoined) {
+      // Already joined
       status.style.background = "#00ff00";
       btn.innerHTML = "✅ JOINED";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
@@ -208,6 +206,7 @@ function updateChannelButtons(minutes, joinedChannels) {
       reqText.innerHTML = "✅ ACCESS ACTIVE";
       reqText.style.color = "#00ff00";
     } else if (minutes >= 15) {
+      // Ready to join
       status.style.background = "#00ff00";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
@@ -215,6 +214,7 @@ function updateChannelButtons(minutes, joinedChannels) {
       reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
       reqText.style.color = "#00ff00";
     } else {
+      // Not enough minutes
       status.style.background = "#ffcc00";
       btn.innerHTML = "🔒 LOCKED";
       btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
@@ -228,7 +228,7 @@ function updateChannelButtons(minutes, joinedChannels) {
 /* ---------------- JOIN CHANNEL ---------------- */
 async function joinChannel(channelId) {
   if (!user) {
-    alert('❌ Please open from Telegram');
+    alert('❌ Open from Telegram Web App');
     return;
   }
 
@@ -238,20 +238,12 @@ async function joinChannel(channelId) {
   btn.disabled = true;
 
   const payload = { userId: String(user.id), channelId };
-  const primary = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
-  
-  // REMOVED: HTTP fallback won't work from HTTPS GitHub Pages
-
-  function markJoined() {
-    const updatedChannels = { ...((window.userData && window.userData.joinedChannels) || {}) };
-    updatedChannels[channelId] = { joinedAt: Date.now(), channelName };
-    userRef.update({ joinedChannels: updatedChannels });
-  }
+  const endpoint = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
 
   try {
-    debugLog('POST -> Worker', { url: primary, payload });
+    debugLog('POST -> Worker', { url: endpoint, payload });
     
-    const response = await fetch(primary, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       mode: 'cors',
       headers: { 'Content-Type': 'application/json' },
@@ -264,34 +256,40 @@ async function joinChannel(channelId) {
     if (response.ok && data.inviteLink) {
       debugLog('Opening invite', data.inviteLink);
       window.open(data.inviteLink, '_blank');
-      markJoined();
-      alert('✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use it immediately - DO NOT SHARE!');
+      
+      // Don't update Firebase here - Worker handles it
+      alert('✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use immediately - DO NOT SHARE!');
       return;
     }
 
     if (data?.error && /already/i.test(data.error)) {
-      markJoined();
-      alert('ℹ️ You are already a member. Access marked as joined.');
+      alert('ℹ️ Already a member! Access should be active.');
+      // Force refresh from Firebase
+      userRef.once('value').then(snap => {
+        window.userData = snap.val();
+        updateChannelButtons(window.userData.totalMinutes || 0, window.userData.joinedChannels || {});
+      });
       return;
     }
 
-    throw new Error(data.error || `HTTP ${response.status}: No invite link returned`);
+    throw new Error(data.error || `HTTP ${response.status}: No invite link`);
 
   } catch (error) {
     debugLog('CRITICAL ERROR', error.message);
-    alert(`❌ ${error.message}\n\nCheck debug log for details.`);
+    alert(`❌ ${error.message}\n\nCheck debug log.`);
   } finally {
-    updateChannelButtons(
-      parseInt(document.getElementById("minutes").innerText) || 0,
-      (window.userData && window.userData.joinedChannels) || {}
-    );
-    btn.disabled = false;
+    // Refresh button state from Firebase (not local)
+    setTimeout(() => {
+      userRef.once('value').then(snap => {
+        const d = snap.val();
+        updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
+      });
+    }, 500);
   }
 }
 
 /* ---------------- THEME ---------------- */
 document.documentElement.style.colorScheme = 'dark';
 </script>
-
 </body>
 </html>
