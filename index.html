@@ -77,7 +77,9 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       </div>
     </div>
   </div>
-  
+  <div id="countdown" style="display: none; color: #ffcc00; font-weight: bold; margin: 10px 0;">
+  ⏰ Link expires in: <span id="timer">10:00</span>
+</div>
   <div class="card">
     <h4>Debug Log</h4>
     <pre id="debug" style="max-height:200px; overflow:auto; white-space:pre-wrap; background: rgba(0,0,0,0.12); padding: 8px; border-radius: 8px; font-size:12px; color:#fff;"></pre>
@@ -287,7 +289,32 @@ async function joinChannel(channelId) {
     }, 500);
   }
 }
+function showCountdown(seconds) {
+  const countdownEl = document.getElementById('countdown');
+  const timerEl = document.getElementById('timer');
+  countdownEl.style.display = 'block';
+  
+  let timeLeft = seconds;
+  const interval = setInterval(() => {
+    const minutes = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    timerEl.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+    
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      countdownEl.style.display = 'none';
+      alert('⚠️ Link expired! Click button again for new link.');
+    }
+    timeLeft--;
+  }, 1000);
+}
 
+// In joinChannel success:
+if (response.ok && data.inviteLink) {
+  showCountdown(600); // 10 minute countdown
+  window.open(data.inviteLink, '_blank');
+  alert('✅ Link generated! Expires in 10 minutes.\n\nClick it quickly!');
+}
 /* ---------------- THEME ---------------- */
 document.documentElement.style.colorScheme = 'dark';
 </script>
