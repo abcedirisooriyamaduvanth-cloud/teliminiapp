@@ -88,6 +88,8 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
 
 <script>
 /* ---------------- TELEGRAM USER ---------------- */
+
+/* ---------------- TELEGRAM USER ---------------- */
 const tg = Telegram.WebApp;
 tg.ready();
 const user = tg.initDataUnsafe.user;
@@ -117,9 +119,30 @@ function debugLog(label, obj) {
     const el = document.getElementById('debug');
     if (!el) return;
     const time = new Date().toLocaleTimeString();
-    const entry = `[${time}] ${label}: ` + (obj === undefined ? '' : (typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2))) + "\n";
+    const entry = `[${time}] ${label}: ${typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)}\n`;
     el.textContent = entry + el.textContent;
   } catch (e) { /* ignore */ }
+}
+
+/* ---------------- FORCE REFRESH FUNCTION ---------------- */
+function forceRefresh() {
+  debugLog('FORCE REFRESH triggered', 'Clearing cache and reloading...');
+  window.userData = null;
+  
+  userRef.once("value").then(snap => {
+    const data = snap.val();
+    debugLog('Force refresh result', {
+      userId: user.id,
+      totalMinutes: data?.totalMinutes,
+      joinedChannels: data?.joinedChannels
+    });
+    
+    window.userData = data;
+    updateChannelButtons(data?.totalMinutes || 0, data?.joinedChannels || {});
+    alert('✅ State refreshed from Firebase!');
+  }).catch(err => {
+    debugLog('Force refresh ERROR', err.message);
+  });
 }
 
 /* ---------------- INIT USER ---------------- */
@@ -139,14 +162,16 @@ userRef.once("value").then(snap => {
   debugLog('User initialized', user.id);
 });
 
+/* ---------------- REALTIME LISTENER WITH DEBUG ---------------- */
 userRef.on("value", snap => {
   const d = snap.val();
-  if (!d) return;
-  
-  debugLog('Firebase update', {
-    minutes: d.totalMinutes,
-    channels: Object.keys(d.joinedChannels || {})
+  debugLog('FIREBASE LISTENER TRIGGERED', {
+    hasData: !!d,
+    totalMinutes: d?.totalMinutes,
+    joinedChannelsKeys: Object.keys(d?.joinedChannels || {})
   });
+  
+  if (!d) return;
   
   window.userData = d;
   document.getElementById("minutes").innerText = d.totalMinutes || 0;
@@ -197,10 +222,16 @@ function updateChannelButtons(minutes, joinedChannels) {
     const status = document.getElementById(`status-${channel}`);
     if (!btn || !reqText || !status) return;
     
-    const isJoined = joinedChannels && joinedChannels[channel] && joinedChannels[channel].joinedAt;
+    // AGGRESSIVE DEBUG LOGGING
+    const isJoined = joinedChannels?.[channel]?.joinedAt;
+    debugLog(`Button ${channel} state`, {
+      minutes: minutes,
+      isJoined: !!isJoined,
+      joinedAt: joinedChannels?.[channel]?.joinedAt,
+      btnText: btn.innerText
+    });
     
     if (isJoined) {
-      // Already joined
       status.style.background = "#00ff00";
       btn.innerHTML = "✅ JOINED";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
@@ -208,7 +239,6 @@ function updateChannelButtons(minutes, joinedChannels) {
       reqText.innerHTML = "✅ ACCESS ACTIVE";
       reqText.style.color = "#00ff00";
     } else if (minutes >= 15) {
-      // Ready to join
       status.style.background = "#00ff00";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
@@ -216,7 +246,6 @@ function updateChannelButtons(minutes, joinedChannels) {
       reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
       reqText.style.color = "#00ff00";
     } else {
-      // Not enough minutes
       status.style.background = "#ffcc00";
       btn.innerHTML = "🔒 LOCKED";
       btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
@@ -259,18 +288,16 @@ async function joinChannel(channelId) {
       debugLog('Opening invite', data.inviteLink);
       window.open(data.inviteLink, '_blank');
       
-      // Don't update Firebase here - Worker handles it
-      alert('✅ Link generated! Expires in 60 seconds.\n\n⚠️ Use immediately - DO NOT SHARE!');
+      // Force immediate Firebase refresh
+      setTimeout(forceRefresh, 2000);
+      
+      alert('✅ Link generated! Expires in 10 minutes.\n\nClose this alert and click link quickly!');
       return;
     }
 
     if (data?.error && /already/i.test(data.error)) {
-      alert('ℹ️ Already a member! Access should be active.');
-      // Force refresh from Firebase
-      userRef.once('value').then(snap => {
-        window.userData = snap.val();
-        updateChannelButtons(window.userData.totalMinutes || 0, window.userData.joinedChannels || {});
-      });
+      alert('ℹ️ Already a member! If you got kicked, wait 30 seconds then click "Force Refresh"');
+      forceRefresh();
       return;
     }
 
@@ -280,43 +307,16 @@ async function joinChannel(channelId) {
     debugLog('CRITICAL ERROR', error.message);
     alert(`❌ ${error.message}\n\nCheck debug log.`);
   } finally {
-    // Refresh button state from Firebase (not local)
-    setTimeout(() => {
-      userRef.once('value').then(snap => {
-        const d = snap.val();
-        updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
-      });
-    }, 500);
+    // Re-enable button immediately
+    btn.disabled = false;
+    // Aggressive refresh after 1 second
+    setTimeout(forceRefresh, 1000);
   }
 }
-function showCountdown(seconds) {
-  const countdownEl = document.getElementById('countdown');
-  const timerEl = document.getElementById('timer');
-  countdownEl.style.display = 'block';
-  
-  let timeLeft = seconds;
-  const interval = setInterval(() => {
-    const minutes = Math.floor(timeLeft / 60);
-    const secs = timeLeft % 60;
-    timerEl.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
-    
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      countdownEl.style.display = 'none';
-      alert('⚠️ Link expired! Click button again for new link.');
-    }
-    timeLeft--;
-  }, 1000);
-}
 
-// In joinChannel success:
-if (response.ok && data.inviteLink) {
-  showCountdown(600); // 10 minute countdown
-  window.open(data.inviteLink, '_blank');
-  alert('✅ Link generated! Expires in 10 minutes.\n\nClick it quickly!');
-}
 /* ---------------- THEME ---------------- */
 document.documentElement.style.colorScheme = 'dark';
 </script>
+
 </body>
 </html>
