@@ -8,8 +8,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
+<!-- FIXED: Use HTTPS protocol for Monetag SDK -->
+<script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
+
 <style>
-/* ... your existing styles ... */
 body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#0b1020,#050814); color: #fff; }
 .app { padding: 16px; }
 .header { display: flex; justify-content: space-between; align-items: center; }
@@ -20,6 +22,8 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
 .loader { display: none; text-align: center; margin-top: 10px; }
 .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
 .channel-card { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid #4a6572; margin-bottom: 12px; }
+.force-refresh-btn { background: linear-gradient(135deg,#ff6b6b,#ee5a24) !important; margin-bottom: 10px; }
+.countdown { display: none; color: #ffcc00; font-weight: bold; margin: 10px 0; text-align: center; }
 @keyframes fadeUp { from {opacity:0; transform:translateY(20px)} to {opacity:1; transform:translateY(0)} }
 </style>
 </head>
@@ -46,7 +50,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
   <div class="card">
     <h4>🏆 LIVE Cricket Matches</h4>
     <div style="background: rgba(255,50,50,0.15); border-left: 3px solid #ff4d4d; padding: 10px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 14px;">
-      <strong>⚠️ SECURITY WARNING:</strong> Invite links expire in 60 seconds and only work for your account. Sharing links will get you permanently banned!
+      <strong>⚠️ SECURITY WARNING:</strong> Invite links expire in 10 minutes. Close mini-app after joining!
     </div>
     
     <div style="display: grid; gap: 12px; margin-top: 12px;">
@@ -77,9 +81,15 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       </div>
     </div>
   </div>
-  <div id="countdown" style="display: none; color: #ffcc00; font-weight: bold; margin: 10px 0;">
-  ⏰ Link expires in: <span id="timer">10:00</span>
-</div>
+
+  <!-- Countdown timer for link expiry -->
+  <div class="countdown" id="countdown">
+    ⏰ Link expires in: <span id="timer">10:00</span>
+  </div>
+
+  <!-- Force refresh button for debugging -->
+  <button class="btn force-refresh-btn" onclick="forceRefresh()">🔄 FORCE REFRESH (Click after kick)</button>
+
   <div class="card">
     <h4>Debug Log</h4>
     <pre id="debug" style="max-height:200px; overflow:auto; white-space:pre-wrap; background: rgba(0,0,0,0.12); padding: 8px; border-radius: 8px; font-size:12px; color:#fff;"></pre>
@@ -87,8 +97,6 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
 </div>
 
 <script>
-/* ---------------- TELEGRAM USER ---------------- */
-
 /* ---------------- TELEGRAM USER ---------------- */
 const tg = Telegram.WebApp;
 tg.ready();
@@ -191,27 +199,79 @@ function reward(minutes) {
   });
 }
 
-/* ---------------- ADS ---------------- */
+/* ---------------- ADS SDK LOADER & FUNCTIONS ---------------- */
+let adSdkReady = false;
+
+function waitForSdk() {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const checkInterval = setInterval(() => {
+      if (typeof show_10340427 === 'function') {
+        adSdkReady = true;
+        clearInterval(checkInterval);
+        debugLog('Monetag SDK loaded successfully');
+        resolve();
+      } else if (attempts > 50) {
+        clearInterval(checkInterval);
+        debugLog('Monetag SDK failed to load after 5 seconds');
+        reject('SDK not loaded');
+      }
+      attempts++;
+    }, 100);
+  });
+}
+
+// Initialize on page load
+waitForSdk().catch(err => {
+  debugLog('SDK Error', err);
+});
+
 function loader(show) {
   document.getElementById("loader").style.display = show ? "block" : "none";
 }
 
-function watchRewarded() {
+async function watchRewarded() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
   loader(true);
-  show_10340427().then(() => {
+  debugLog('Starting rewarded ad', null);
+  
+  try {
+    await show_10340427();
     reward(2);
     alert("🎉 +2 minutes earned!");
+    debugLog('Rewarded ad completed', '+2 min');
+  } catch (e) {
+    debugLog('Rewarded ad error', e.message);
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
     loader(false);
-  }).catch(() => loader(false));
+  }
 }
 
-function watchPopup() {
+async function watchPopup() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
   loader(true);
-  show_10340427('pop').then(() => {
+  debugLog('Starting popup ad', null);
+  
+  try {
+    await show_10340427('pop');
     reward(1);
     alert("🔥 +1 minute earned!");
+    debugLog('Popup ad completed', '+1 min');
+  } catch (e) {
+    debugLog('Popup ad error', e.message);
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
     loader(false);
-  }).catch(() => loader(false));
+  }
 }
 
 /* ---------------- CHANNEL BUTTONS ---------------- */
@@ -222,14 +282,7 @@ function updateChannelButtons(minutes, joinedChannels) {
     const status = document.getElementById(`status-${channel}`);
     if (!btn || !reqText || !status) return;
     
-    // AGGRESSIVE DEBUG LOGGING
     const isJoined = joinedChannels?.[channel]?.joinedAt;
-    debugLog(`Button ${channel} state`, {
-      minutes: minutes,
-      isJoined: !!isJoined,
-      joinedAt: joinedChannels?.[channel]?.joinedAt,
-      btnText: btn.innerText
-    });
     
     if (isJoined) {
       status.style.background = "#00ff00";
@@ -258,44 +311,64 @@ function updateChannelButtons(minutes, joinedChannels) {
 
 /* ---------------- JOIN CHANNEL ---------------- */
 async function joinChannel(channelId) {
+  if (!user) {
+    alert('❌ Open from Telegram Web App');
+    return;
+  }
+
+  const channelName = CHANNEL_NAMES[channelId];
   const btn = document.getElementById(`btn-${channelId}`);
-  btn.innerText = "⏳ Generating...";
+  btn.innerHTML = '⏳ Generating...';
   btn.disabled = true;
 
+  const payload = { userId: String(user.id), channelId };
+  const endpoint = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
+
   try {
-    const res = await fetch(
-      "https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: String(user.id),
-          channelId
-        })
-      }
-    );
+    debugLog('POST -> Worker', { url: endpoint, payload });
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-    const data = await res.json();
+    const data = await response.json().catch(() => ({}));
+    debugLog('Worker response', { ok: response.ok, status: response.status, data });
 
-    if (!res.ok) throw new Error(data.error);
+    if (response.ok && data.inviteLink) {
+      debugLog('Opening invite', data.inviteLink);
+      window.open(data.inviteLink, '_blank');
+      
+      // Force immediate Firebase refresh after 2 seconds
+      setTimeout(forceRefresh, 2000);
+      
+      alert('✅ Link generated! Expires in 10 minutes.\n\nClose this alert and click link quickly!');
+      return;
+    }
 
-    window.open(data.inviteLink, "_blank");
+    if (data?.error && /already/i.test(data.error)) {
+      alert('ℹ️ Already a member! If you got kicked, wait 30 seconds then click "Force Refresh"');
+      forceRefresh();
+      return;
+    }
 
-    // 🔄 Force Firebase refresh
-    setTimeout(() => {
-      firebase.database().ref("users/" + user.id).once("value");
-    }, 2000);
+    throw new Error(data.error || `HTTP ${response.status}: No invite link`);
 
-  } catch (e) {
-    alert("❌ " + e.message);
+  } catch (error) {
+    debugLog('CRITICAL ERROR', error.message);
+    alert(`❌ ${error.message}\n\nCheck debug log.`);
   } finally {
+    // Re-enable button immediately
     btn.disabled = false;
+    // Aggressive refresh after 1 second
+    setTimeout(forceRefresh, 1000);
   }
 }
 
 /* ---------------- THEME ---------------- */
 document.documentElement.style.colorScheme = 'dark';
 </script>
-
 </body>
 </html>
