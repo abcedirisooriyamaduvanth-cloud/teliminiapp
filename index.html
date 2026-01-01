@@ -258,59 +258,38 @@ function updateChannelButtons(minutes, joinedChannels) {
 
 /* ---------------- JOIN CHANNEL ---------------- */
 async function joinChannel(channelId) {
-  if (!user) {
-    alert('❌ Open from Telegram Web App');
-    return;
-  }
-
-  const channelName = CHANNEL_NAMES[channelId];
   const btn = document.getElementById(`btn-${channelId}`);
-  btn.innerHTML = '⏳ Generating...';
+  btn.innerText = "⏳ Generating...";
   btn.disabled = true;
 
-  const payload = { userId: String(user.id), channelId };
-  const endpoint = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
-
   try {
-    debugLog('POST -> Worker', { url: endpoint, payload });
-    
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const res = await fetch(
+      "https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: String(user.id),
+          channelId
+        })
+      }
+    );
 
-    const data = await response.json().catch(() => ({}));
-    debugLog('Worker response', { ok: response.ok, status: response.status, data });
+    const data = await res.json();
 
-    if (response.ok && data.inviteLink) {
-      debugLog('Opening invite', data.inviteLink);
-      window.open(data.inviteLink, '_blank');
-      
-      // Force immediate Firebase refresh
-      setTimeout(forceRefresh, 2000);
-      
-      alert('✅ Link generated! Expires in 10 minutes.\n\nClose this alert and click link quickly!');
-      return;
-    }
+    if (!res.ok) throw new Error(data.error);
 
-    if (data?.error && /already/i.test(data.error)) {
-      alert('ℹ️ Already a member! If you got kicked, wait 30 seconds then click "Force Refresh"');
-      forceRefresh();
-      return;
-    }
+    window.open(data.inviteLink, "_blank");
 
-    throw new Error(data.error || `HTTP ${response.status}: No invite link`);
+    // 🔄 Force Firebase refresh
+    setTimeout(() => {
+      firebase.database().ref("users/" + user.id).once("value");
+    }, 2000);
 
-  } catch (error) {
-    debugLog('CRITICAL ERROR', error.message);
-    alert(`❌ ${error.message}\n\nCheck debug log.`);
+  } catch (e) {
+    alert("❌ " + e.message);
   } finally {
-    // Re-enable button immediately
     btn.disabled = false;
-    // Aggressive refresh after 1 second
-    setTimeout(forceRefresh, 1000);
   }
 }
 
