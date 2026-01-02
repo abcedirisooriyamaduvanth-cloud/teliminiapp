@@ -57,7 +57,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       <!-- Match 1 -->
       <div class="channel-card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
-          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 India vs Australia</h4>
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Bangladesh Premier League</h4>
           <span class="status-indicator" id="status-match1" style="background: #ff4d4d;"></span>
         </div>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_01</p>
@@ -70,7 +70,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       <!-- Match 2 -->
       <div class="channel-card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
-          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 England vs South Africa</h4>
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League</h4>
           <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
         </div>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_02</p>
@@ -147,7 +147,7 @@ function forceRefresh() {
     
     window.userData = data;
     updateChannelButtons(data?.totalMinutes || 0, data?.joinedChannels || {});
-    alert('✅ State refreshed from Firebase!');
+    alert('✅ State refreshed!');
   }).catch(err => {
     debugLog('Force refresh ERROR', err.message);
   });
