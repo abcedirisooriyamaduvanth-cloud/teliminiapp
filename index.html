@@ -15,131 +15,128 @@
 <!-- Monetag -->
 <script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
 
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
-:root{
-  --bg:#050814;
-  --card:rgba(255,255,255,.08);
-  --cyan:#00eaff;
-  --gold:#ffcc00;
-  --green:#00ff99;
-  --red:#ff4d4d;
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(circle at top, #0f1b3d, #050814);
+  color: #fff;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Inter,system-ui;
-  background:radial-gradient(circle at top,#0b1020,#050814);
-  color:#fff;
+.app {
+  padding: 16px;
+  max-width: 520px;
+  margin: auto;
 }
 
-.app{padding:16px;max-width:520px;margin:auto}
-
-/* ---------- HEADER ---------- */
-.header{
-  display:flex;justify-content:space-between;align-items:center;
-  margin-bottom:12px
-}
-.user{
-  font-size:13px;opacity:.9
-}
-.badge{
-  background:rgba(0,234,255,.15);
-  padding:2px 8px;border-radius:20px;
-  font-size:11px;color:var(--cyan)
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-/* ---------- CARDS ---------- */
-.card{
-  background:var(--card);
-  border-radius:18px;
-  padding:16px;
-  margin-bottom:14px;
-  box-shadow:0 0 25px rgba(0,0,0,.4);
-  animation:fadeUp .5s ease
+.header h3 {
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 1px;
 }
 
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:none}
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+  border-radius: 18px;
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  animation: fadeUp .5s ease;
 }
 
-/* ---------- PROGRESS ---------- */
-.progress-wrap{
-  display:flex;justify-content:center;margin:10px 0
-}
-.progress-ring{
-  --p:0;
-  width:170px;height:170px;border-radius:50%;
-  background:conic-gradient(var(--cyan) calc(var(--p)*1%), #1e293b 0);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 30px rgba(0,234,255,.45)
-}
-.progress-inner{
-  width:130px;height:130px;border-radius:50%;
-  background:#020617;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  text-align:center
-}
-.progress-inner b{font-size:26px}
-.progress-inner span{font-size:12px;opacity:.7}
-
-/* ---------- BUTTONS ---------- */
-.btn{
-  width:100%;padding:14px;
-  border:none;border-radius:14px;
-  font-size:16px;color:#fff;
-  cursor:pointer;margin-top:10px
-}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5}
-
-.btn-earn{
-  background:linear-gradient(135deg,#00c6ff,#0072ff)
-}
-.btn-quick{
-  background:linear-gradient(135deg,#ffb347,#ff7f50)
-}
-.btn-join{
-  background:linear-gradient(135deg,#00ff99,#00c853)
-}
-.btn-locked{
-  background:linear-gradient(135deg,#576574,#2c2c54)
+.step {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-/* ---------- MATCH ---------- */
-.match{
-  padding:14px;border-radius:14px;
-  border:1px solid rgba(255,255,255,.1);
-  margin-bottom:10px
-}
-.match.locked{opacity:.55;filter:blur(.7px)}
-.live-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:red;animation:pulse 1s infinite
-}
-@keyframes pulse{
-  0%{box-shadow:0 0 0 0 rgba(255,0,0,.6)}
-  100%{box-shadow:0 0 0 10px rgba(255,0,0,0)}
+.step span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#00c6ff,#0072ff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
 }
 
-/* ---------- TUTORIAL ---------- */
-.overlay{
-  position:fixed;inset:0;
-  background:rgba(5,8,20,.96);
-  display:flex;align-items:center;justify-content:center;
-  z-index:99;padding:20px
+.btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+  background: linear-gradient(135deg,#00c6ff,#0072ff);
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: .2s;
 }
-.tutorial{
-  max-width:360px;text-align:center
-}
-.tutorial h2{margin-bottom:8px}
-.step{margin:14px 0;opacity:.9}
-.step b{color:var(--cyan)}
 
-.footer-note{
-  font-size:12px;text-align:center;opacity:.6;margin-top:10px
+.btn:active { transform: scale(.96); }
+.btn:disabled { opacity: .5; }
+
+.loader {
+  display: none;
+  text-align: center;
+  margin-top: 8px;
+  color: #ffcc00;
+}
+
+.progress-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background:
+    conic-gradient(#00ffcc calc(var(--p) * 1%), rgba(255,255,255,.15) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron';
+  font-size: 14px;
+}
+
+.channel-card {
+  background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  margin-bottom: 14px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.countdown {
+  display: none;
+  text-align: center;
+  color: #ffcc00;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
 }
 </style>
 </head>
@@ -147,166 +144,161 @@ body{
 <body>
 <div class="app">
 
-<!-- HEADER -->
-<div class="header">
-  <h3>🏏 Cricket Rewards</h3>
-  <div class="user">
-    <div id="uname">@user</div>
-    <div class="badge">ID <span id="uid">0000</span></div>
+  <!-- HEADER -->
+  <div class="header">
+    <h3>🏏 CRICKET QUEST</h3>
+    <small id="username"></small>
   </div>
-</div>
 
-<!-- PROGRESS -->
-<div class="card">
-  <h4>🎮 Your Progress</h4>
-  <div class="progress-wrap">
-    <div class="progress-ring" id="ring">
-      <div class="progress-inner">
-        <b><span id="mins">0</span>/15</b>
-        <span>Minutes</span>
+  <!-- HOW IT WORKS -->
+  <div class="card">
+    <h4>🎮 How It Works</h4>
+    <div class="step"><span>1</span> Watch ads & earn minutes</div>
+    <div class="step"><span>2</span> Reach <b>15 minutes</b></div>
+    <div class="step"><span>3</span> Match unlocks</div>
+    <div class="step"><span>4</span> Join channel → time starts reducing</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="card progress-wrap">
+    <div>
+      <h4>Your Power</h4>
+      <p>⏱ Minutes: <b id="minutes">0</b></p>
+      <p>💰 Earnings: $<b id="earnings">0.00</b></p>
+    </div>
+    <div class="progress-ring" id="ring" style="--p:0">
+      <span id="ringText">0/15</span>
+    </div>
+  </div>
+
+  <!-- EARN -->
+  <div class="card">
+    <h4>⚡ Earn Minutes</h4>
+    <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
+    <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
+    <div class="loader" id="loader">Loading ad...</div>
+  </div>
+
+  <!-- MATCHES -->
+  <div class="card">
+    <h4>🏆 Live Matches</h4>
+
+    <div class="channel-card">
+      <div style="display:flex;justify-content:space-between">
+        <b>Bangladesh Premier League</b>
+        <span id="status-match1" class="status-indicator"></span>
       </div>
+      <p id="req-match1">Need 15 minutes</p>
+      <button class="btn" id="btn-match1" onclick="joinChannel('match1')">Join</button>
+    </div>
+
+    <div class="channel-card">
+      <div style="display:flex;justify-content:space-between">
+        <b>Big Bash League</b>
+        <span id="status-match2" class="status-indicator"></span>
+      </div>
+      <p id="req-match2">Need 15 minutes</p>
+      <button class="btn" id="btn-match2" onclick="joinChannel('match2')">Join</button>
     </div>
   </div>
-  <div style="text-align:center;font-size:14px" id="statusText">
-    Earn 15 minutes to unlock LIVE matches
-  </div>
-</div>
 
-<!-- EARN -->
-<div class="card">
-  <h4>💰 Earn Minutes</h4>
-  <button class="btn btn-earn" onclick="watchReward()">🎬 Watch Ad (+2 min)</button>
-  <button class="btn btn-quick" onclick="watchQuick()">⚡ Quick Ad (+1 min)</button>
-</div>
-
-<!-- MATCHES -->
-<div class="card">
-  <h4>🔴 LIVE MATCHES</h4>
-
-  <div class="match" id="match1">
-    <div style="display:flex;justify-content:space-between">
-      <b>Bangladesh Premier League</b>
-      <div class="live-dot"></div>
-    </div>
-    <button class="btn btn-join" id="btn1" onclick="join('match1')">JOIN</button>
+  <div class="countdown" id="countdown">
+    ⏰ Link expires in <span id="timer">10:00</span>
   </div>
 
-  <div class="match" id="match2">
-    <div style="display:flex;justify-content:space-between">
-      <b>Big Bash League</b>
-      <div class="live-dot"></div>
-    </div>
-    <button class="btn btn-join" id="btn2" onclick="join('match2')">JOIN</button>
-  </div>
-</div>
-
-<div class="footer-note">
-  Minutes reduce while watching. Close app after joining.
-</div>
-</div>
-
-<!-- TUTORIAL -->
-<div class="overlay" id="tutorial">
-  <div class="tutorial">
-    <h2>Welcome 👋</h2>
-    <div class="step">1️⃣ <b>Watch Ads</b> to earn minutes</div>
-    <div class="step">2️⃣ Reach <b>15 Minutes</b></div>
-    <div class="step">3️⃣ Unlock & join <b>LIVE Cricket</b></div>
-    <button class="btn btn-join" onclick="start()">START EARNING</button>
-  </div>
 </div>
 
 <script>
-/* ---------- TELEGRAM ---------- */
+/* TELEGRAM */
 const tg = Telegram.WebApp;
 tg.ready();
 const user = tg.initDataUnsafe.user;
+document.getElementById("username").innerText = "@" + (user?.username || "player");
 
-/* ---------- UI USER ---------- */
-uname.innerText = '@' + (user.username || 'player');
-uid.innerText = String(user.id).slice(-4);
-
-/* ---------- FIREBASE ---------- */
+/* FIREBASE */
 firebase.initializeApp({
   apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
-  databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com"
+  authDomain: "cricketteligram.firebaseapp.com",
+  databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com",
+  projectId: "cricketteligram"
 });
-const ref = firebase.database().ref('users/' + user.id);
 
-/* ---------- INIT ---------- */
-ref.once('value').then(s=>{
-  if(!s.exists()){
-    ref.set({
-      totalMinutes:0,
-      tutorialSeen:false
-    })
+const db = firebase.database();
+const userRef = db.ref("users/" + user.id);
+
+/* INIT */
+userRef.once("value").then(s => {
+  if (!s.exists()) {
+    userRef.set({
+      uid: user.id,
+      username: user.username || "",
+      totalMinutes: 0,
+      totalEarnings: 0,
+      adViews: 0,
+      joinedChannels: {}
+    });
   }
 });
 
-/* ---------- LISTENER ---------- */
-ref.on('value',s=>{
-  const d=s.val(); if(!d)return;
-  mins.innerText=d.totalMinutes;
-  ring.style.setProperty('--p',Math.min(100,(d.totalMinutes/15)*100));
-
-  const unlocked=d.totalMinutes>=15;
-  statusText.innerText=unlocked?'🔓 Matches Unlocked':'🔒 Earn 15 minutes';
-
-  ['match1','match2'].forEach((m,i)=>{
-    const box=document.getElementById(m);
-    const btn=document.getElementById('btn'+(i+1));
-    if(unlocked){
-      box.classList.remove('locked');
-      btn.disabled=false;
-      btn.innerText='JOIN';
-      btn.className='btn btn-join';
-    }else{
-      box.classList.add('locked');
-      btn.disabled=true;
-      btn.innerText='LOCKED';
-      btn.className='btn btn-locked';
-    }
-  });
-
-  if(d.tutorialSeen) tutorial.style.display='none';
+/* REALTIME */
+userRef.on("value", s => {
+  const d = s.val();
+  if (!d) return;
+  document.getElementById("minutes").innerText = d.totalMinutes || 0;
+  document.getElementById("earnings").innerText = (d.totalEarnings || 0).toFixed(2);
+  const p = Math.min((d.totalMinutes || 0) / 15 * 100, 100);
+  document.getElementById("ring").style.setProperty("--p", p);
+  document.getElementById("ringText").innerText = Math.min(d.totalMinutes,15)+"/15";
+  updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
 });
 
-/* ---------- TUTORIAL ---------- */
-function start(){
-  ref.update({tutorialSeen:true});
-  tutorial.style.display='none';
-}
-
-/* ---------- REWARD ---------- */
-function reward(m){
-  ref.transaction(d=>{
-    if(!d)return d;
-    d.totalMinutes+=m;
+/* REWARD */
+function reward(m) {
+  userRef.transaction(d => {
+    d.totalMinutes += m;
+    d.totalEarnings += m * 0.02;
+    d.adViews += 1;
     return d;
-  })
+  });
 }
 
-async function watchReward(){
-  await show_10340427();
-  reward(2);
+/* ADS */
+function loader(v){document.getElementById("loader").style.display=v?"block":"none";}
+async function watchRewarded(){loader(true);await show_10340427();reward(2);loader(false);}
+async function watchPopup(){loader(true);await show_10340427('pop');reward(1);loader(false);}
+
+/* CHANNELS */
+const CHANNELS={match1:'A',match2:'B'};
+function updateChannelButtons(m,j){
+  Object.keys(CHANNELS).forEach(c=>{
+    const btn=document.getElementById(`btn-${c}`);
+    const req=document.getElementById(`req-${c}`);
+    const st=document.getElementById(`status-${c}`);
+    if(j[c]?.joinedAt){
+      st.style.background="#00ff00";
+      btn.style.display="none";
+      req.innerText="✅ Joined";
+    } else if(m>=15){
+      st.style.background="#00ff00";
+      btn.disabled=false;
+      req.innerText="Unlocked";
+    } else {
+      st.style.background="#ffaa00";
+      btn.disabled=true;
+      req.innerText=`Need ${15-m} more minutes`;
+    }
+  });
 }
 
-async function watchQuick(){
-  await show_10340427('pop');
-  reward(1);
-}
-
-/* ---------- JOIN ---------- */
-async function join(channel){
-  fetch('https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite',{
+/* JOIN */
+async function joinChannel(id){
+  await fetch('https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({userId:String(user.id),channelId:channel})
-  })
-  .then(r=>r.json())
-  .then(d=>{
+    body:JSON.stringify({userId:String(user.id),channelId:id})
+  }).then(r=>r.json()).then(d=>{
     if(d.inviteLink) window.open(d.inviteLink,'_blank');
-  })
+  });
 }
 </script>
 </body>
