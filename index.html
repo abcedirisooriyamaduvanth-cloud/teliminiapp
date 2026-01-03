@@ -70,7 +70,9 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
       <!-- Match 2 -->
       <div class="channel-card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
-          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League</h4>
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League
+
+          </h4>
           <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
         </div>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_02</p>
@@ -286,16 +288,17 @@ function updateChannelButtons(minutes, joinedChannels) {
     
     if (isJoined) {
       status.style.background = "#00ff00";
-      btn.innerHTML = "✅ JOINED";
-      btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
-      btn.disabled = true;
-      reqText.innerHTML = "✅ ACCESS ACTIVE";
+      // HIDE THE BUTTON COMPLETELY AFTER JOINING
+      btn.style.display = "none";
+      reqText.innerHTML = "✅ ACCESS ACTIVE - Channel Joined";
       reqText.style.color = "#00ff00";
     } else if (minutes >= 15) {
       status.style.background = "#00ff00";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
       btn.disabled = false;
+      // Ensure button is visible if previously hidden
+      btn.style.display = "block";
       reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
       reqText.style.color = "#00ff00";
     } else {
@@ -303,6 +306,8 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.innerHTML = "🔒 LOCKED";
       btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
       btn.disabled = true;
+      // Ensure button is visible
+      btn.style.display = "block";
       reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
       reqText.style.color = "#ffcc00";
     }
