@@ -22,30 +22,24 @@
 body{
   margin:0;
   font-family:'Inter',sans-serif;
-  background:radial-gradient(circle at top,#2b0000,#070000);
+  background:radial-gradient(circle at top,#2a0000,#070000);
   color:#fff;
 }
-.app{
-  max-width:520px;
-  margin:auto;
-  padding:16px;
-}
+.app{padding:16px;max-width:520px;margin:auto;}
 .header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  display:flex;justify-content:space-between;align-items:center;
 }
 .header h3{
   font-family:'Orbitron';
   color:#ffb703;
-  text-shadow:0 0 14px #ff4500;
+  text-shadow:0 0 12px #ff4500;
 }
 .card{
-  background:linear-gradient(180deg,rgba(255,70,0,.18),rgba(0,0,0,.45));
-  border-radius:20px;
+  background:linear-gradient(180deg,rgba(255,80,0,.18),rgba(0,0,0,.45));
+  border-radius:18px;
   padding:16px;
   margin-top:14px;
-  box-shadow:0 0 28px rgba(255,69,0,.25);
+  box-shadow:0 0 22px rgba(255,69,0,.25);
 }
 .btn{
   width:100%;
@@ -56,37 +50,29 @@ body{
   border-radius:16px;
   color:#fff;
   font-size:16px;
-  font-weight:700;
+  font-weight:bold;
   cursor:pointer;
 }
-.btn:disabled{
-  opacity:.45;
-}
+.btn:disabled{opacity:.45}
 .status-dot{
-  width:12px;
-  height:12px;
-  border-radius:50%;
+  width:12px;height:12px;border-radius:50%;
+  box-shadow:0 0 12px currentColor;
 }
 .progress{
-  height:12px;
-  border-radius:10px;
+  height:12px;border-radius:10px;
   background:rgba(255,255,255,.15);
-  overflow:hidden;
-  margin-top:8px;
+  overflow:hidden;margin-top:8px;
 }
-.progress div{
-  height:100%;
-  width:0%;
+.progress > div{
+  height:100%;width:0%;
   background:linear-gradient(90deg,#ff512f,#ffe259);
   transition:.4s;
 }
-.unlock{
-  animation:pulse 1s infinite;
-}
+.unlock{animation:pulse 1s infinite;}
 @keyframes pulse{
-  0%{box-shadow:0 0 12px #ff9800}
-  50%{box-shadow:0 0 30px #ff4500}
-  100%{box-shadow:0 0 12px #ff9800}
+  0%{box-shadow:0 0 10px #ff9800}
+  50%{box-shadow:0 0 25px #ff4500}
+  100%{box-shadow:0 0 10px #ff9800}
 }
 </style>
 </head>
@@ -98,14 +84,6 @@ body{
 <div class="header">
   <h3>🔥 CRICKET LIVE</h3>
   <small id="username"></small>
-</div>
-
-<!-- INFO -->
-<div class="card">
-  <h4>🏏 How it works</h4>
-  <p>• Watch ads → earn minutes</p>
-  <p>• Reach <b>15 minutes</b> to unlock live stream</p>
-  <p>• Join channel → watch live cricket</p>
 </div>
 
 <!-- STATS -->
@@ -123,33 +101,41 @@ body{
   <div id="loader" style="display:none;margin-top:8px">Loading ad…</div>
 </div>
 
-<!-- LIVE MATCH -->
+<!-- MATCH 1 -->
 <div class="card">
-  <h4>🔴 Live Cricket Stream</h4>
   <div style="display:flex;justify-content:space-between;align-items:center">
-    <b>Premium Live Match</b>
+    <h4>🏏 Bangladesh Premier League</h4>
     <span id="status-match1" class="status-dot"></span>
   </div>
   <p id="req-match1">Need 15 minutes</p>
   <button class="btn" id="btn-match1" onclick="joinChannel('match1')">LOCKED</button>
 </div>
 
+<!-- MATCH 2 -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h4>🏏 Big Bash League</h4>
+    <span id="status-match2" class="status-dot"></span>
+  </div>
+  <p id="req-match2">Need 15 minutes</p>
+  <button class="btn" id="btn-match2" onclick="joinChannel('match2')">LOCKED</button>
+</div>
+
 </div>
 
 <script>
 /* TELEGRAM */
-const tg = Telegram.WebApp;
-tg.ready();
-const user = tg.initDataUnsafe.user;
-document.getElementById("username").innerText = "@" + (user?.username || "player");
+const tg=Telegram.WebApp;tg.ready();
+const user=tg.initDataUnsafe.user;
+document.getElementById("username").innerText="@"+(user?.username||"player");
 
 /* FIREBASE */
 firebase.initializeApp({
-  apiKey:"AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
-  databaseURL:"https://cricketteligram-default-rtdb.firebaseio.com"
+ apiKey:"AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
+ databaseURL:"https://cricketteligram-default-rtdb.firebaseio.com"
 });
-const db = firebase.database();
-const userRef = db.ref("users/" + user.id);
+const db=firebase.database();
+const userRef=db.ref("users/"+user.id);
 
 /* INIT */
 userRef.once("value").then(s=>{
@@ -167,44 +153,43 @@ userRef.once("value").then(s=>{
 
 /* REALTIME – SAME LOGIC */
 userRef.on("value",snap=>{
- const d = snap.val();
- if(!d) return;
+ const d=snap.val(); if(!d) return;
+ const m=d.totalMinutes||0;
 
- const m = d.totalMinutes || 0;
- document.getElementById("minutes").innerText = m;
- document.getElementById("progress").style.width = Math.min(m/15*100,100) + "%";
+ document.getElementById("minutes").innerText=m;
+ document.getElementById("progress").style.width=Math.min(m/15*100,100)+"%";
 
- const btn = document.getElementById("btn-match1");
- const txt = document.getElementById("req-match1");
- const st  = document.getElementById("status-match1");
+ ["match1","match2"].forEach(ch=>{
+  const btn=document.getElementById("btn-"+ch);
+  const txt=document.getElementById("req-"+ch);
+  const st=document.getElementById("status-"+ch);
 
- if(m >= 15){
-  btn.disabled = false;
-  btn.textContent = "JOIN LIVE";
-  btn.classList.add("unlock");
-  txt.textContent = "UNLOCKED – JOIN NOW";
-  st.style.background = "#00ff00";
- }else{
-  btn.disabled = true;
-  btn.textContent = "LOCKED";
-  btn.classList.remove("unlock");
-  txt.textContent = `Need ${15-m} more minutes`;
-  st.style.background = "#ffaa00";
- }
+  if(m>=15){
+   btn.disabled=false;
+   btn.textContent="JOIN LIVE";
+   btn.classList.add("unlock");
+   txt.textContent="UNLOCKED – JOIN NOW";
+   st.style.background="#00ff00";
+  }else{
+   btn.disabled=true;
+   btn.textContent="LOCKED";
+   btn.classList.remove("unlock");
+   txt.textContent=`Need ${15-m} more minutes`;
+   st.style.background="#ffaa00";
+  }
+ });
 });
 
-/* ADS – SAME LOGIC */
-function loader(v){
- document.getElementById("loader").style.display = v ? "block" : "none";
-}
+/* ADS – SAME */
+function loader(v){document.getElementById("loader").style.display=v?"block":"none";}
 
 async function watchRewarded(){
  loader(true);
  await show_10340427();
  userRef.transaction(d=>{
-  d.totalMinutes += 2;
-  d.totalEarnings += 0.04;
-  d.adViews += 1;
+  d.totalMinutes+=2;
+  d.totalEarnings+=0.04;
+  d.adViews+=1;
   return d;
  });
  loader(false);
@@ -214,26 +199,23 @@ async function watchPopup(){
  loader(true);
  await show_10340427('pop');
  userRef.transaction(d=>{
-  d.totalMinutes += 1;
-  d.totalEarnings += 0.02;
-  d.adViews += 1;
+  d.totalMinutes+=1;
+  d.totalEarnings+=0.02;
+  d.adViews+=1;
   return d;
  });
  loader(false);
 }
 
-/* JOIN – SAME LOGIC */
+/* JOIN – SAME WORKER */
 async function joinChannel(channelId){
- await fetch(
-  "https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",
-  {
-   method:"POST",
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({userId:String(user.id),channelId})
-  }
- ).then(r=>r.json()).then(d=>{
-  if(d.inviteLink) window.open(d.inviteLink,"_blank");
+ const r=await fetch("https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",{
+  method:"POST",
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({userId:String(user.id),channelId})
  });
+ const d=await r.json();
+ if(d.inviteLink) window.open(d.inviteLink,"_blank");
 }
 </script>
 </body>
