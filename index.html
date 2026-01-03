@@ -5,134 +5,83 @@
 <title>Cricket Rewards</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- REQUIRED SCRIPTS (UNCHANGED) -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
 
 <style>
-:root{
-  --fire1:#ff7a18;
-  --fire2:#ff3d00;
-  --fire3:#ffb300;
-  --bg1:#0a0f1f;
-  --bg2:#050812;
-}
-
-*{box-sizing:border-box}
-
+/* 🔥 FIRE THEME UI ONLY */
 body{
   margin:0;
-  font-family:'Inter',system-ui;
-  background:radial-gradient(circle at top,#1b223f,var(--bg2));
+  font-family:'Inter',sans-serif;
+  background:radial-gradient(circle at top,#2a0000,#060000);
   color:#fff;
 }
-
-.app{padding:16px;max-width:520px;margin:auto}
-
+.app{padding:16px;max-width:520px;margin:auto;}
 .header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px
 }
-
 .header h3{
-  margin:0;
-  background:linear-gradient(90deg,var(--fire3),var(--fire1));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  color:#ffb703;
+  text-shadow:0 0 12px #ff4500;
 }
 
 .card{
-  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.05));
+  background:linear-gradient(180deg,rgba(255,80,0,.18),rgba(0,0,0,.45));
   border-radius:18px;
   padding:16px;
   margin-top:14px;
-  box-shadow:0 0 25px rgba(255,90,0,.15);
-  animation:fadeUp .6s ease;
+  box-shadow:0 0 22px rgba(255,69,0,.25);
+  animation:fadeUp .4s ease;
 }
-
-.stat{
-  display:flex;
-  justify-content:space-between;
-  margin-top:6px;
-  font-size:15px
-}
-
-.stat b{color:var(--fire3)}
 
 .btn{
   width:100%;
   padding:14px;
   margin-top:10px;
+  background:linear-gradient(135deg,#ff512f,#f09819);
   border:none;
-  border-radius:14px;
+  border-radius:16px;
   color:#fff;
   font-size:16px;
+  font-weight:600;
   cursor:pointer;
-  background:linear-gradient(135deg,var(--fire1),var(--fire2));
-  box-shadow:0 6px 18px rgba(255,80,0,.4);
-  position:relative;
-  overflow:hidden;
 }
-
-.btn::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,.4),transparent);
-  transform:translateX(-100%);
-}
-
-.btn:hover::after{animation:shine 1.2s}
-
 .btn:active{transform:scale(.97)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
-.loader{
-  display:none;
-  text-align:center;
-  margin-top:10px;
-  color:var(--fire3);
-  animation:pulse 1.2s infinite;
+.status-indicator{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  box-shadow:0 0 12px currentColor;
 }
 
 .channel-card{
-  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.06));
+  background:rgba(255,120,0,.12);
   padding:14px;
-  border-radius:16px;
-  border:1px solid rgba(255,120,0,.4);
-  box-shadow:0 0 20px rgba(255,90,0,.2);
-}
-
-.status-indicator{
-  width:12px;height:12px;border-radius:50%;
-  box-shadow:0 0 10px currentColor
-}
-
-.countdown{
-  display:none;
-  text-align:center;
-  margin:14px 0;
-  font-weight:bold;
-  color:var(--fire3);
+  border-radius:14px;
+  border:1px solid rgba(255,180,0,.35);
 }
 
 .force-refresh-btn{
-  background:linear-gradient(135deg,#ff5252,#c62828)!important
+  background:linear-gradient(135deg,#ff4757,#c44569)!important;
+}
+
+.countdown{
+  color:#ffcc00;
+  font-weight:bold;
+  text-align:center;
+  margin-top:10px;
 }
 
 @keyframes fadeUp{
   from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:none}
-}
-@keyframes pulse{
-  0%,100%{opacity:.4}
-  50%{opacity:1}
-}
-@keyframes shine{
-  to{transform:translateX(100%)}
+  to{opacity:1;transform:translateY(0)}
 }
 </style>
 </head>
@@ -140,61 +89,67 @@ body{
 <body>
 <div class="app">
 
+<!-- HEADER -->
 <div class="header">
-  <h3>🏏 CRICKET REWARDS</h3>
+  <h3>🔥 Cricket Rewards</h3>
   <span id="username"></span>
 </div>
 
+<!-- STATS -->
 <div class="card">
-  <h4>🔥 Your Progress</h4>
-  <div class="stat">⏱ Minutes <b id="minutes">0</b></div>
-  <div class="stat">💰 Earnings <b>$<span id="earnings">0.00</span></b></div>
+  <h4>Total Earned</h4>
+  <p>⏱ Minutes: <b id="minutes">0</b></p>
+  <p>💰 Earnings: $<b id="earnings">0.00</b></p>
 </div>
 
+<!-- EARN -->
 <div class="card">
-  <h4>🎮 Earn Minutes</h4>
+  <h4>⚡ Earn Minutes</h4>
   <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
-  <button class="btn" onclick="watchPopup()">⚡ Popup Ad (+1 min)</button>
-  <div class="loader" id="loader">Loading Ad…</div>
+  <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
+  <div class="loader" id="loader">Loading Ad...</div>
 </div>
 
+<!-- MATCHES -->
 <div class="card">
-  <h4>🏆 LIVE MATCHES</h4>
+  <h4>🏆 LIVE Cricket Matches</h4>
 
-  <!-- MATCH 1 -->
   <div class="channel-card">
-    <div style="display:flex;justify-content:space-between">
-      <h4>🏏 Bangladesh Premier League</h4>
-      <span id="status-match1" class="status-indicator" style="background:#ff5252"></span>
+    <div style="display:flex;justify-content:space-between;">
+      <h4 style="margin:0;color:#ffb703;">🏏 Bangladesh Premier League</h4>
+      <span id="status-match1" class="status-indicator"></span>
     </div>
-    <p>Live • VIP Channel 01</p>
-    <p id="req-match1" style="color:var(--fire3)">Need 15 minutes</p>
-    <button class="btn" id="btn-match1" onclick="joinChannel('match1')">JOIN MATCH</button>
+    <p id="req-match1">Need 15 minutes</p>
+    <button class="btn" id="btn-match1" onclick="joinChannel('match1')">Join Match</button>
   </div>
 
-  <!-- MATCH 2 -->
-  <div class="channel-card" style="margin-top:12px">
-    <div style="display:flex;justify-content:space-between">
-      <h4>🏏 Big Bash League</h4>
-      <span id="status-match2" class="status-indicator" style="background:#ff5252"></span>
+  <div class="channel-card" style="margin-top:12px;">
+    <div style="display:flex;justify-content:space-between;">
+      <h4 style="margin:0;color:#ffb703;">🏏 Mens Big Bash League</h4>
+      <span id="status-match2" class="status-indicator"></span>
     </div>
-    <p>Live • VIP Channel 02</p>
-    <p id="req-match2" style="color:var(--fire3)">Need 15 minutes</p>
-    <button class="btn" id="btn-match2" onclick="joinChannel('match2')">JOIN MATCH</button>
+    <p id="req-match2">Need 15 minutes</p>
+    <button class="btn" id="btn-match2" onclick="joinChannel('match2')">Join Match</button>
   </div>
 </div>
 
-<button class="btn force-refresh-btn" onclick="forceRefresh()">🔄 FORCE REFRESH</button>
+<div class="countdown" id="countdown">
+ ⏰ Link expires in <span id="timer">10:00</span>
+</div>
+
+<button class="btn force-refresh-btn" onclick="forceRefresh()">
+ 🔄 FORCE REFRESH
+</button>
 
 <div class="card">
-  <h4>🧪 Debug</h4>
-  <pre id="debug" style="font-size:12px;white-space:pre-wrap"></pre>
+ <h4>Debug Log</h4>
+ <pre id="debug" style="font-size:12px;max-height:200px;overflow:auto;"></pre>
 </div>
 
 </div>
 
-<!-- 🔴 YOUR ORIGINAL SCRIPT (100% SAME LOGIC) -->
-<!-- ⚠️ NOT MODIFIED – pasted exactly as-is -->
+<!-- 🔴 SCRIPT BELOW IS 100% UNCHANGED -->
+
 <script>
 /* ---------------- TELEGRAM USER ---------------- */
 const tg = Telegram.WebApp;
