@@ -7,8 +7,6 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<!-- FIXED: Use HTTPS protocol for Monetag SDK -->
 <script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
 
 <style>
@@ -23,6 +21,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
 .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
 .channel-card { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid #4a6572; margin-bottom: 12px; }
 .force-refresh-btn { background: linear-gradient(135deg,#ff6b6b,#ee5a24) !important; margin-bottom: 10px; }
+.reset-btn { background: linear-gradient(135deg,#ff4757,#c44569) !important; margin-top: 8px; }
 .countdown { display: none; color: #ffcc00; font-weight: bold; margin: 10px 0; text-align: center; }
 @keyframes fadeUp { from {opacity:0; transform:translateY(20px)} to {opacity:1; transform:translateY(0)} }
 </style>
@@ -64,22 +63,20 @@ body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(
         <p style="margin: 0 0 8px 0; font-size: 13px;">
           <span id="req-match1" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
         </p>
-        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#ff6b6b,#ee5a24);" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
+        <button class="btn" style="padding: 10px; margin-top: 5px;" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
       </div>
       
       <!-- Match 2 -->
       <div class="channel-card">
         <div style="display: flex; justify-content: space-between; align-items: start;">
-          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League
-
-          </h4>
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League</h4>
           <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
         </div>
         <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_02</p>
         <p style="margin: 0 0 8px 0; font-size: 13px;">
           <span id="req-match2" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
         </p>
-        <button class="btn" style="padding: 10px; margin-top: 5px; background: linear-gradient(135deg,#48dbfb,#1e90ff);" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
+        <button class="btn" style="padding: 10px; margin-top: 5px;" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
       </div>
     </div>
   </div>
@@ -146,6 +143,32 @@ function forceRefresh() {
       totalMinutes: data?.totalMinutes,
       joinedChannels: data?.joinedChannels
     });
+    
+    // Auto-clear expired pending joins (>5 min old)
+    const joinedChannels = data?.joinedChannels || {};
+    const updates = {};
+    let cleared = false;
+    
+    Object.keys(joinedChannels).forEach(channelId => {
+      const ch = joinedChannels[channelId];
+      // If marked as joined but very recent (<3 min), keep it
+      // If pending/old, clear it
+      const age = Date.now() - (ch.joinedAt || ch.pendingAt || 0);
+      if (ch.joinedAt && age < 3 * 60 * 1000) {
+        // Keep recent joins
+      } else if (ch.joinedAt && age > 3 * 60 * 1000) {
+        // Confirmed join (older than 3 min)
+      } else if (ch.pendingAt && age > 5 * 60 * 1000) {
+        // Clear expired pending
+        updates[`joinedChannels/${channelId}`] = null;
+        cleared = true;
+        debugLog('Cleared expired pending', channelId);
+      }
+    });
+    
+    if (cleared) {
+      userRef.update(updates);
+    }
     
     window.userData = data;
     updateChannelButtons(data?.totalMinutes || 0, data?.joinedChannels || {});
@@ -223,7 +246,6 @@ function waitForSdk() {
   });
 }
 
-// Initialize on page load
 waitForSdk().catch(err => {
   debugLog('SDK Error', err);
 });
@@ -284,34 +306,61 @@ function updateChannelButtons(minutes, joinedChannels) {
     const status = document.getElementById(`status-${channel}`);
     if (!btn || !reqText || !status) return;
     
-    const isJoined = joinedChannels?.[channel]?.joinedAt;
+    const channelData = joinedChannels?.[channel] || {};
+    const isJoined = channelData.joinedAt;
+    const inviteTime = channelData.inviteGeneratedAt || channelData.joinedAt;
     
-    if (isJoined) {
+    // If joined but within 3 minute window, show reset option
+    const isRecent = isJoined && (Date.now() - isJoined < 3 * 60 * 1000);
+    
+    if (isJoined && !isRecent) {
+      // Confirmed join - hide button
       status.style.background = "#00ff00";
-      // HIDE THE BUTTON COMPLETELY AFTER JOINING
       btn.style.display = "none";
       reqText.innerHTML = "✅ ACCESS ACTIVE - Channel Joined";
       reqText.style.color = "#00ff00";
+    } else if (isJoined && isRecent) {
+      // Recent join - show reset option for 3 minutes
+      status.style.background = "#ffaa00";
+      btn.innerHTML = "❌ DIDN'T WORK? RESET";
+      btn.style.background = "linear-gradient(135deg,#ff4757,#c44569)";
+      btn.disabled = false;
+      btn.style.display = "block";
+      btn.onclick = () => resetFailedJoin(channel);
+      reqText.innerHTML = `⏰ VERIFYING JOIN (${Math.ceil((3 * 60 * 1000 - (Date.now() - isJoined)) / 1000)}s)`;
+      reqText.style.color = "#ffaa00";
     } else if (minutes >= 15) {
+      // Ready to join
       status.style.background = "#00ff00";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
       btn.disabled = false;
-      // Ensure button is visible if previously hidden
       btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
       reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
       reqText.style.color = "#00ff00";
     } else {
+      // Locked
       status.style.background = "#ffcc00";
       btn.innerHTML = "🔒 LOCKED";
       btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
       btn.disabled = true;
-      // Ensure button is visible
       btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
       reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
       reqText.style.color = "#ffcc00";
     }
   });
+}
+
+/* ---------------- RESET FAILED JOIN ---------------- */
+async function resetFailedJoin(channelId) {
+  if (confirm('🔄 Reset join status?\n\nUse this ONLY if joining failed. You will NOT be refunded minutes. Click "Force Refresh" after reset.')) {
+    await userRef.child(`joinedChannels/${channelId}`).remove();
+    debugLog('Reset failed join for channel', channelId);
+    alert('✅ Status reset! Try joining again.');
+    forceRefresh();
+  }
 }
 
 /* ---------------- JOIN CHANNEL ---------------- */
@@ -346,15 +395,12 @@ async function joinChannel(channelId) {
       debugLog('Opening invite', data.inviteLink);
       window.open(data.inviteLink, '_blank');
       
-      // Force immediate Firebase refresh after 2 seconds
-      setTimeout(forceRefresh, 2000);
-      
-      alert('✅ Link generated! Expires in 10 minutes.\n\nClose this alert and click link quickly!');
+      alert('✅ Link generated! Click it within 10 minutes.\n\nAFTER joining, click "Force Refresh" to verify.');
       return;
     }
 
     if (data?.error && /already/i.test(data.error)) {
-      alert('ℹ️ Already a member! If you got kicked, wait 30 seconds then click "Force Refresh"');
+      alert('ℹ️ Already a member! Click "Force Refresh" to update status.');
       forceRefresh();
       return;
     }
@@ -364,11 +410,7 @@ async function joinChannel(channelId) {
   } catch (error) {
     debugLog('CRITICAL ERROR', error.message);
     alert(`❌ ${error.message}\n\nCheck debug log.`);
-  } finally {
-    // Re-enable button immediately
     btn.disabled = false;
-    // Aggressive refresh after 1 second
-    setTimeout(forceRefresh, 1000);
   }
 }
 
