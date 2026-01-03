@@ -1,222 +1,864 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Cricket Live Rewards</title>
+<title>Cricket Rewards</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<!-- Telegram -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-<!-- Monetag -->
 <script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
 
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-
 <style>
-body{
-  margin:0;
-  font-family:'Inter',sans-serif;
-  background:radial-gradient(circle at top,#2a0000,#070000);
-  color:#fff;
+/* ===== CORE THEME VARIABLES ===== */
+:root {
+  --primary: #00c6ff;
+  --secondary: #0072ff;
+  --accent: #ffcc00;
+  --danger: #ff4d4d;
+  --success: #00ff88;
+  --dark-bg: #0a0e1a;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --glow: 0 0 20px rgba(0, 198, 255, 0.5);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
-.app{padding:16px;max-width:520px;margin:auto;}
-.header{
-  display:flex;justify-content:space-between;align-items:center;
+
+/* ===== BASE STYLES ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-.header h3{
-  font-family:'Orbitron';
-  color:#ffb703;
-  text-shadow:0 0 12px #ff4500;
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(180deg, var(--dark-bg), #050814);
+  color: #fff;
+  overflow-x: hidden;
 }
-.card{
-  background:linear-gradient(180deg,rgba(255,80,0,.18),rgba(0,0,0,.45));
-  border-radius:18px;
-  padding:16px;
-  margin-top:14px;
-  box-shadow:0 0 22px rgba(255,69,0,.25);
+
+/* ===== 3D ICONS ===== */
+.icon-3d {
+  display: inline-block;
+  font-size: 2em;
+  transform: perspective(1000px) rotateY(-15deg) rotateX(10deg);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  animation: float 3s ease-in-out infinite;
 }
-.btn{
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  background:linear-gradient(135deg,#ff512f,#f09819);
-  border:none;
-  border-radius:16px;
-  color:#fff;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
+
+@keyframes float {
+  0%, 100% { transform: perspective(1000px) rotateY(-15deg) rotateX(10deg) translateY(0); }
+  50% { transform: perspective(1000px) rotateY(-15deg) rotateX(10deg) translateY(-10px); }
 }
-.btn:disabled{opacity:.45}
-.status-dot{
-  width:12px;height:12px;border-radius:50%;
-  box-shadow:0 0 12px currentColor;
+
+/* ===== LAYOUT ===== */
+.app {
+  padding: 20px;
+  max-width: 480px;
+  margin: 0 auto;
 }
-.progress{
-  height:12px;border-radius:10px;
-  background:rgba(255,255,255,.15);
-  overflow:hidden;margin-top:8px;
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 2px solid var(--primary);
+  box-shadow: var(--glow);
 }
-.progress > div{
-  height:100%;width:0%;
-  background:linear-gradient(90deg,#ff512f,#ffe259);
-  transition:.4s;
+
+.header h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 24px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: var(--glow);
 }
-.unlock{animation:pulse 1s infinite;}
-@keyframes pulse{
-  0%{box-shadow:0 0 10px #ff9800}
-  50%{box-shadow:0 0 25px #ff4500}
-  100%{box-shadow:0 0 10px #ff9800}
+
+.user-badge {
+  background: var(--card-bg);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--primary);
+  font-weight: 600;
+}
+
+/* ===== TUTORIAL SECTION ===== */
+.tutorial {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 20px;
+  margin: 20px 0;
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 30px rgba(255, 204, 0, 0.2);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 30px rgba(255, 204, 0, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(255, 204, 0, 0.4); }
+  100% { box-shadow: 0 0 30px rgba(255, 204, 0, 0.2); }
+}
+
+.tutorial h3 {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--accent);
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent);
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--accent), #ffaa00);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.step-text {
+  flex: 1;
+}
+
+.step-check {
+  color: var(--success);
+  font-size: 1.5em;
+  margin-left: 10px;
+  animation: pop 0.5s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card h2 {
+  font-family: 'Orbitron', sans-serif;
+  color: var(--primary);
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+/* ===== STATS DISPLAY ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+  border-color: var(--primary);
+  transform: translateY(-5px);
+  box-shadow: var(--glow);
+}
+
+.stat-value {
+  font-size: 2em;
+  font-weight: 900;
+  font-family: 'Orbitron', sans-serif;
+  color: var(--primary);
+  display: block;
+  text-shadow: var(--glow);
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #aaa;
+  margin-top: 5px;
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-container {
+  margin: 20px 0;
+}
+
+.progress-bar {
+  background: rgba(0, 0, 0, 0.3);
+  height: 30px;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+  border: 2px solid var(--primary);
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--secondary), var(--primary));
+  height: 100%;
+  width: 0%;
+  transition: width 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+  border-radius: 15px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #00ff88, #00cc70);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff4d4d, #cc0000);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--accent), #ffaa00);
+}
+
+/* ===== LOADER ===== */
+.loader {
+  display: none;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.loader-spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: var(--glow);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== CHANNEL CARDS ===== */
+.channel-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  padding: 20px;
+  border-radius: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.channel-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 198, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.channel-card:hover::before {
+  opacity: 1;
+}
+
+.channel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-color: var(--primary);
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.channel-title {
+  margin: 0;
+  color: var(--primary);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.channel-info {
+  font-size: 14px;
+  color: #aaa;
+  margin: 8px 0;
+}
+
+.channel-requirement {
+  font-size: 13px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* ===== COUNTDOWN ===== */
+.countdown {
+  display: none;
+  background: rgba(255, 77, 77, 0.1);
+  border: 2px solid var(--danger);
+  border-radius: 15px;
+  padding: 15px;
+  margin: 20px 0;
+  text-align: center;
+  animation: pulse-danger 1.5s infinite;
+}
+
+@keyframes pulse-danger {
+  0% { box-shadow: 0 0 20px rgba(255, 77, 77, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(255, 77, 77, 0.5); }
+  100% { box-shadow: 0 0 20px rgba(255, 77, 77, 0.3); }
+}
+
+.countdown-timer {
+  font-size: 1.5em;
+  font-family: 'Orbitron', sans-serif;
+  color: var(--danger);
+  text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);
+}
+
+/* ===== WARNING BANNER ===== */
+.warning-banner {
+  background: linear-gradient(135deg, rgba(255, 77, 77, 0.15), rgba(255, 77, 77, 0.05));
+  border-left: 4px solid var(--danger);
+  padding: 12px;
+  margin: 15px 0;
+  border-radius: 0 10px 10px 0;
+  font-size: 14px;
+  animation: blink 3s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .app { padding: 15px; }
+  .header h1 { font-size: 20px; }
+  .stat-value { font-size: 1.5em; }
 }
 </style>
 </head>
-
 <body>
 <div class="app">
-
-<!-- HEADER -->
-<div class="header">
-  <h3>🔥 CRICKET LIVE</h3>
-  <small id="username"></small>
-</div>
-
-<!-- STATS -->
-<div class="card">
-  <h4>⏱ Your Minutes</h4>
-  <b id="minutes">0</b> minutes
-  <div class="progress"><div id="progress"></div></div>
-</div>
-
-<!-- EARN -->
-<div class="card">
-  <h4>⚡ Earn Minutes</h4>
-  <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
-  <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
-  <div id="loader" style="display:none;margin-top:8px">Loading ad…</div>
-</div>
-
-<!-- MATCH 1 -->
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <h4>🏏 Bangladesh Premier League</h4>
-    <span id="status-match1" class="status-dot"></span>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🏏 Cricket Rewards</h1>
+    <div class="user-badge" id="username">@player</div>
   </div>
-  <p id="req-match1">Need 15 minutes</p>
-  <button class="btn" id="btn-match1" onclick="joinChannel('match1')">LOCKED</button>
-</div>
 
-<!-- MATCH 2 -->
-<div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <h4>🏏 Big Bash League</h4>
-    <span id="status-match2" class="status-dot"></span>
+  <!-- TUTORIAL SECTION -->
+  <div class="tutorial" id="tutorial">
+    <h3>🎮 GAME RULES</h3>
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-text">Watch ads to earn minutes</div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-text">Collect <span style="color: var(--accent);">15 minutes</span> to unlock channels</div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-text">Join live cricket streams & earn more!</div>
+    </div>
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-text">Use <span style="color: var(--accent);">RESET</span> if joining fails (no refund)</div>
+    </div>
   </div>
-  <p id="req-match2">Need 15 minutes</p>
-  <button class="btn" id="btn-match2" onclick="joinChannel('match2')">LOCKED</button>
-</div>
 
+  <!-- EARNINGS CARD -->
+  <div class="card">
+    <h2><span class="icon-3d">⏱</span> Your Stats</h2>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <span class="stat-value" id="minutes">0</span>
+        <div class="stat-label">Minutes Earned</div>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="earnings">$0.00</span>
+        <div class="stat-label">Total Earnings</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESS TO UNLOCK -->
+  <div class="card">
+    <h2><span class="icon-3d">🔓</span> Unlock Progress</h2>
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill">0%</div>
+      </div>
+      <div class="progress-text" id="progressText">Need 15 minutes to unlock channels</div>
+    </div>
+  </div>
+
+  <!-- EARN MINUTES -->
+  <div class="card">
+    <h2><span class="icon-3d">💰</span> Earn Minutes</h2>
+    <button class="btn" onclick="watchRewarded()">
+      <span style="font-size: 1.5em; margin-right: 10px;">🎬</span>
+      Watch Video Ad
+      <div style="float: right; color: var(--accent);">+2 MIN</div>
+    </button>
+    <button class="btn btn-warning" onclick="watchPopup()">
+      <span style="font-size: 1.5em; margin-right: 10px;">🔥</span>
+      Popup Ad
+      <div style="float: right; color: #fff;">+1 MIN</div>
+    </button>
+    <div class="loader" id="loader">
+      <div class="loader-spinner"></div>
+      <p>Loading Advertisement...</p>
+    </div>
+  </div>
+
+  <!-- LIVE MATCHES -->
+  <div class="card">
+    <h2><span class="icon-3d">🏆</span> LIVE Cricket Matches</h2>
+    <div class="warning-banner">
+      <strong>⚠️ SECURITY WARNING:</strong> Invite links expire in 10 minutes. Close mini-app after joining!
+    </div>
+    
+    <!-- Match 1 -->
+    <div class="channel-card">
+      <div class="channel-header">
+        <h3 class="channel-title">🏏 Bangladesh Premier League</h3>
+        <span class="status-indicator" id="status-match1" style="background: #ff4d4d;"></span>
+      </div>
+      <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_01</p>
+      <p class="channel-requirement" id="req-match1">Need 15 minutes to join</p>
+      <button class="btn" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
+    </div>
+    
+    <!-- Match 2 -->
+    <div class="channel-card">
+      <div class="channel-header">
+        <h3 class="channel-title">🏏 Mens Big Bash League</h3>
+        <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
+      </div>
+      <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_02</p>
+      <p class="channel-requirement" id="req-match2">Need 15 minutes to join</p>
+      <button class="btn" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown" id="countdown">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+      <span style="font-size: 2em;">⏰</span>
+      <div>
+        <div>Link expires in:</div>
+        <div class="countdown-timer" id="timer">10:00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORCE REFRESH -->
+  <button class="btn btn-danger" onclick="forceRefresh()">
+    <span style="font-size: 1.5em; margin-right: 10px;">🔄</span>
+    FORCE REFRESH (Click after joining)
+  </button>
 </div>
 
 <script>
-/* TELEGRAM */
-const tg=Telegram.WebApp;tg.ready();
-const user=tg.initDataUnsafe.user;
-document.getElementById("username").innerText="@"+(user?.username||"player");
+/* ==================== TELEGRAM ==================== */
+const tg = Telegram.WebApp;
+tg.ready();
+const user = tg.initDataUnsafe.user;
+document.getElementById("username").innerText = "@" + (user.username || "player");
 
-/* FIREBASE */
-firebase.initializeApp({
- apiKey:"AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
- databaseURL:"https://cricketteligram-default-rtdb.firebaseio.com"
-});
-const db=firebase.database();
-const userRef=db.ref("users/"+user.id);
+/* ==================== FIREBASE ==================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
+  authDomain: "cricketteligram.firebaseapp.com",
+  databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com",
+  projectId: "cricketteligram",
+  storageBucket: "cricketteligram.appspot.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const userRef = db.ref("users/" + user.id);
 
-/* INIT */
-userRef.once("value").then(s=>{
- if(!s.exists()){
-  userRef.set({
-   uid:user.id,
-   username:user.username||"",
-   totalMinutes:0,
-   totalEarnings:0,
-   adViews:0,
-   joinedChannels:{}
-  });
- }
-});
+/* ==================== CONFIG ==================== */
+const CHANNEL_NAMES = {
+  match1: 'India vs Australia',
+  match2: 'England vs South Africa'
+};
 
-/* REALTIME – SAME LOGIC */
-userRef.on("value",snap=>{
- const d=snap.val(); if(!d) return;
- const m=d.totalMinutes||0;
-
- document.getElementById("minutes").innerText=m;
- document.getElementById("progress").style.width=Math.min(m/15*100,100)+"%";
-
- ["match1","match2"].forEach(ch=>{
-  const btn=document.getElementById("btn-"+ch);
-  const txt=document.getElementById("req-"+ch);
-  const st=document.getElementById("status-"+ch);
-
-  if(m>=15){
-   btn.disabled=false;
-   btn.textContent="JOIN LIVE";
-   btn.classList.add("unlock");
-   txt.textContent="UNLOCKED – JOIN NOW";
-   st.style.background="#00ff00";
-  }else{
-   btn.disabled=true;
-   btn.textContent="LOCKED";
-   btn.classList.remove("unlock");
-   txt.textContent=`Need ${15-m} more minutes`;
-   st.style.background="#ffaa00";
+/* ==================== PROGRESS BAR ==================== */
+function updateProgress(minutes) {
+  const percentage = Math.min((minutes / 15) * 100, 100);
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  
+  progressFill.style.width = percentage + '%';
+  progressFill.textContent = Math.floor(percentage) + '%';
+  
+  if (minutes >= 15) {
+    progressText.textContent = '✅ Channels Unlocked!';
+    progressText.style.color = 'var(--success)';
+  } else {
+    progressText.textContent = `Need ${15 - minutes} more minutes to unlock channels`;
+    progressText.style.color = 'var(--accent)';
   }
- });
+}
+
+/* ==================== FORCE REFRESH ==================== */
+function forceRefresh() {
+  window.userData = null;
+  
+  userRef.once("value").then(snap => {
+    const data = snap.val();
+    
+    const joinedChannels = data?.joinedChannels || {};
+    const updates = {};
+    let cleared = false;
+    
+    Object.keys(joinedChannels).forEach(channelId => {
+      const ch = joinedChannels[channelId];
+      const age = Date.now() - (ch.joinedAt || ch.pendingAt || 0);
+      
+      if (ch.pendingAt && age > 5 * 60 * 1000) {
+        updates[`joinedChannels/${channelId}`] = null;
+        cleared = true;
+      }
+    });
+    
+    if (cleared) {
+      userRef.update(updates);
+    }
+    
+    window.userData = data;
+    updateChannelButtons(data?.totalMinutes || 0, data?.joinedChannels || {});
+    updateProgress(data?.totalMinutes || 0);
+    
+    // Show success animation
+    const btn = event.target;
+    btn.innerHTML = '✅ REFRESHED!';
+    setTimeout(() => {
+      btn.innerHTML = '🔄 FORCE REFRESH (Click after joining)';
+    }, 2000);
+  });
+}
+
+/* ==================== INIT USER ==================== */
+userRef.once("value").then(snap => {
+  if (!snap.exists()) {
+    userRef.set({
+      uid: user.id,
+      username: user.username || "",
+      name: user.first_name || "",
+      totalMinutes: 0,
+      totalEarnings: 0,
+      adViews: 0,
+      lastEarnedAt: Date.now(),
+      joinedChannels: {}
+    });
+  }
 });
 
-/* ADS – SAME */
-function loader(v){document.getElementById("loader").style.display=v?"block":"none";}
+/* ==================== REALTIME LISTENER ==================== */
+userRef.on("value", snap => {
+  const d = snap.val();
+  if (!d) return;
+  
+  window.userData = d;
+  document.getElementById("minutes").innerText = d.totalMinutes || 0;
+  document.getElementById("earnings").innerText = (d.totalEarnings || 0).toFixed(2);
+  updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
+  updateProgress(d.totalMinutes || 0);
+  
+  // Hide tutorial after 15 minutes
+  if (d.totalMinutes >= 15) {
+    document.getElementById('tutorial').style.display = 'none';
+  }
+});
 
-async function watchRewarded(){
- loader(true);
- await show_10340427();
- userRef.transaction(d=>{
-  d.totalMinutes+=2;
-  d.totalEarnings+=0.04;
-  d.adViews+=1;
-  return d;
- });
- loader(false);
+/* ==================== REWARD LOGIC ==================== */
+function reward(minutes) {
+  userRef.transaction(d => {
+    if (!d) return d;
+    d.totalMinutes += minutes;
+    d.adViews += 1;
+    d.totalEarnings += minutes * 0.02;
+    d.lastEarnedAt = Date.now();
+    return d;
+  });
 }
 
-async function watchPopup(){
- loader(true);
- await show_10340427('pop');
- userRef.transaction(d=>{
-  d.totalMinutes+=1;
-  d.totalEarnings+=0.02;
-  d.adViews+=1;
-  return d;
- });
- loader(false);
+/* ==================== ADS SDK ==================== */
+let adSdkReady = false;
+
+function waitForSdk() {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const checkInterval = setInterval(() => {
+      if (typeof show_10340427 === 'function') {
+        adSdkReady = true;
+        clearInterval(checkInterval);
+        resolve();
+      } else if (attempts > 50) {
+        clearInterval(checkInterval);
+        reject('SDK not loaded');
+      }
+      attempts++;
+    }, 100);
+  });
 }
 
-/* JOIN – SAME WORKER */
-async function joinChannel(channelId){
- const r=await fetch("https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",{
-  method:"POST",
-  headers:{'Content-Type':'application/json'},
-  body:JSON.stringify({userId:String(user.id),channelId})
- });
- const d=await r.json();
- if(d.inviteLink) window.open(d.inviteLink,"_blank");
+waitForSdk().catch(() => {});
+
+function loader(show) {
+  document.getElementById("loader").style.display = show ? "block" : "none";
 }
+
+async function watchRewarded() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
+  loader(true);
+  
+  try {
+    await show_10340427();
+    reward(2);
+    alert("🎉 +2 minutes earned!");
+  } catch (e) {
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
+    loader(false);
+  }
+}
+
+async function watchPopup() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
+  loader(true);
+  
+  try {
+    await show_10340427('pop');
+    reward(1);
+    alert("🔥 +1 minute earned!");
+  } catch (e) {
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
+    loader(false);
+  }
+}
+
+/* ==================== CHANNEL BUTTONS ==================== */
+function updateChannelButtons(minutes, joinedChannels) {
+  Object.keys(CHANNEL_NAMES).forEach(channel => {
+    const btn = document.getElementById(`btn-${channel}`);
+    const reqText = document.getElementById(`req-${channel}`);
+    const status = document.getElementById(`status-${channel}`);
+    if (!btn || !reqText || !status) return;
+    
+    const channelData = joinedChannels?.[channel] || {};
+    const isJoined = channelData.joinedAt;
+    const isRecent = isJoined && (Date.now() - isJoined < 3 * 60 * 1000);
+    
+    if (isJoined && !isRecent) {
+      status.style.background = "#00ff88";
+      btn.style.display = "none";
+      reqText.innerHTML = "✅ ACCESS ACTIVE - Channel Joined";
+      reqText.style.color = "#00ff88";
+    } else if (isJoined && isRecent) {
+      status.style.background = "#ffaa00";
+      btn.innerHTML = "❌ DIDN'T WORK? RESET";
+      btn.className = "btn btn-danger";
+      btn.disabled = false;
+      btn.style.display = "block";
+      btn.onclick = () => resetFailedJoin(channel);
+      reqText.innerHTML = `⏰ VERIFYING JOIN (${Math.ceil((3 * 60 * 1000 - (Date.now() - isJoined)) / 1000)}s)`;
+      reqText.style.color = "#ffaa00";
+    } else if (minutes >= 15) {
+      status.style.background = "#00ff88";
+      btn.innerHTML = "🔓 JOIN NOW";
+      btn.className = "btn btn-success";
+      btn.disabled = false;
+      btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
+      reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
+      reqText.style.color = "#00ff88";
+    } else {
+      status.style.background = "#ffcc00";
+      btn.innerHTML = "🔒 LOCKED";
+      btn.className = "btn";
+      btn.disabled = true;
+      btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
+      reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
+      reqText.style.color = "#ffcc00";
+    }
+  });
+}
+
+/* ==================== RESET FAILED JOIN ==================== */
+async function resetFailedJoin(channelId) {
+  if (confirm('🔄 Reset join status?\n\nUse this ONLY if joining failed. You will NOT be refunded minutes. Click "Force Refresh" after reset.')) {
+    await userRef.child(`joinedChannels/${channelId}`).remove();
+    alert('✅ Status reset! Try joining again.');
+    forceRefresh();
+  }
+}
+
+/* ==================== JOIN CHANNEL ==================== */
+async function joinChannel(channelId) {
+  if (!user) {
+    alert('❌ Open from Telegram Web App');
+    return;
+  }
+
+  const channelName = CHANNEL_NAMES[channelId];
+  const btn = document.getElementById(`btn-${channelId}`);
+  btn.innerHTML = '⏳ Generating...';
+  btn.disabled = true;
+
+  const payload = { userId: String(user.id), channelId };
+  const endpoint = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok && data.inviteLink) {
+      window.open(data.inviteLink, '_blank');
+      alert('✅ Link generated! Click it within 10 minutes.\n\nAFTER joining, click "Force Refresh" to verify.');
+      return;
+    }
+
+    if (data?.error && /already/i.test(data.error)) {
+      alert('ℹ️ Already a member! Click "Force Refresh" to update status.');
+      forceRefresh();
+      return;
+    }
+
+    throw new Error(data.error || `HTTP ${response.status}: No invite link`);
+
+  } catch (error) {
+    alert(`❌ ${error.message}\n\nCheck connection.`);
+    btn.disabled = false;
+  }
+}
+
+/* ==================== THEME ==================== */
+document.documentElement.style.colorScheme = 'dark';
 </script>
 </body>
 </html>
