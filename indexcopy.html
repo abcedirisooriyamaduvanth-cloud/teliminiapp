@@ -1,626 +1,421 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>🏏 CricketStream Pro</title>
-  
-  <!-- 🔥 OFFICIAL MONETAG SDK - MUST BE BELOW HEAD -->
-  <script src='//libtl.com/sdk.js' data-zone='10340427' data-sdk='show_10340427'></script>
-  
-  <style>
-    /* Premium Cricket Theme */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0a3d25 0%, #1e5631 100%);
-      color: #fff; overflow-x: hidden; min-height: 100vh;
-    }
-    .screen { display: none; min-height: 100vh; padding: 20px; }
-    .screen.active { display: block; }
-    .cricket-bg {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/><circle cx="50" cy="50" r="5" fill="rgba(255,255,255,0.1)"/></svg>');
-      z-index: -1;
-    }
-    .login-container {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100vh; text-align: center;
-    }
-    .login-container h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 3px 3px 6px rgba(0,0,0,0.4); }
-    .login-container p { margin-bottom: 2rem; opacity: 0.9; font-size: 1.1rem; }
-    .app-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 15px 20px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px);
-      border-radius: 15px; margin-bottom: 20px; position: sticky; top: 20px; z-index: 100;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .user-stats {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;
-    }
-    .stat-card {
-      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-      padding: 20px; border-radius: 15px; text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .stat-value { display: block; font-size: 2.2rem; font-weight: bold; color: #f39c12; }
-    .section {
-      background: rgba(255,255,255,0.1); backdrop-filter: blur(10px);
-      padding: 20px; border-radius: 15px; margin-bottom: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .ad-card {
-      background: rgba(255,255,255,0.08); padding: 15px; border-radius: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.3s; cursor: pointer;
-    }
-    .ad-card:active { transform: scale(0.98); }
-    .ad-info h4 { color: #f39c12; margin-bottom: 5px; }
-    .ad-reward .minutes { font-size: 1.8rem; font-weight: bold; color: #2ecc71; }
-    .ad-button-play {
-      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-      border: none; color: #fff; padding: 10px 20px; border-radius: 8px;
-      font-weight: bold; cursor: pointer;
-    }
-    .ad-loading {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.95); padding: 40px; border-radius: 15px;
-      text-align: center; z-index: 400; display: none;
-    }
-    .spinner {
-      border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #f39c12;
-      border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .status-message {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.95); padding: 30px; border-radius: 15px;
-      text-align: center; z-index: 300; display: none;
-    }
-    .status-message.show { display: block; }
-  </style>
+<meta charset="UTF-8" />
+<title>Cricket Rewards</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
+
+<style>
+body { margin: 0; font-family: 'Inter', sans-serif; background: linear-gradient(180deg,#0b1020,#050814); color: #fff; }
+.app { padding: 16px; }
+.header { display: flex; justify-content: space-between; align-items: center; }
+.card { background: rgba(255,255,255,0.08); border-radius: 16px; padding: 16px; margin-top: 14px; animation: fadeUp .5s ease; }
+.btn { width: 100%; padding: 14px; margin-top: 10px; background: linear-gradient(135deg,#00c6ff,#0072ff); border: none; border-radius: 12px; color: #fff; font-size: 16px; cursor: pointer; }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.loader { display: none; text-align: center; margin-top: 10px; }
+.status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+.channel-card { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; border: 1px solid #4a6572; margin-bottom: 12px; }
+.force-refresh-btn { background: linear-gradient(135deg,#ff6b6b,#ee5a24) !important; margin-bottom: 10px; }
+.reset-btn { background: linear-gradient(135deg,#ff4757,#c44569) !important; margin-top: 8px; }
+.countdown { display: none; color: #ffcc00; font-weight: bold; margin: 10px 0; text-align: center; }
+@keyframes fadeUp { from {opacity:0; transform:translateY(20px)} to {opacity:1; transform:translateY(0)} }
+</style>
 </head>
 <body>
-  <div id="app">
-    <!-- Login Screen -->
-    <div id="loginScreen" class="screen active">
-      <div class="cricket-bg"></div>
-      <div class="login-container">
-        <h1>🏏 CricketStream Pro</h1>
-        <p>Watch ads, earn minutes, stream cricket! 🏆</p>
-        <button id="loginBtn" class="btn-primary">Login with Telegram</button>
-      </div>
+<div class="app">
+  <div class="header">
+    <h3>🏏 Cricket Rewards</h3>
+    <span id="username"></span>
+  </div>
+
+  <div class="card">
+    <h4>Total Earned</h4>
+    <p>⏱ Minutes: <b id="minutes">0</b></p>
+    <p>💰 Earnings: $<b id="earnings">0.00</b></p>
+  </div>
+
+  <div class="card">
+    <h4>Earn Minutes</h4>
+    <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
+    <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
+    <div class="loader" id="loader">Loading Ad...</div>
+  </div>
+
+  <div class="card">
+    <h4>🏆 LIVE Cricket Matches</h4>
+    <div style="background: rgba(255,50,50,0.15); border-left: 3px solid #ff4d4d; padding: 10px; margin: 10px 0; border-radius: 0 8px 8px 0; font-size: 14px;">
+      <strong>⚠️ SECURITY WARNING:</strong> Invite links expire in 10 minutes. Close mini-app after joining!
     </div>
-
-    <!-- Dashboard -->
-    <div id="dashboardScreen" class="screen">
-      <header class="app-bar">
-        <button id="backBtn" class="back-btn" style="display: none;">← Back</button>
-        <h2>Dashboard</h2>
-        <button id="telegramBtn" class="telegram-btn">📱 Telegram</button>
-      </header>
-
-      <div class="user-stats">
-        <div class="stat-card">
-          <span class="stat-value" id="watchTime">0</span>
-          <span class="stat-label">Minutes Earned</span>
+    
+    <div style="display: grid; gap: 12px; margin-top: 12px;">
+      <!-- Match 1 -->
+      <div class="channel-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Bangladesh Premier League</h4>
+          <span class="status-indicator" id="status-match1" style="background: #ff4d4d;"></span>
         </div>
-        <div class="stat-card">
-          <span class="stat-value" id="linksCount">0</span>
-          <span class="stat-label">Links Added</span>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_01</p>
+        <p style="margin: 0 0 8px 0; font-size: 13px;">
+          <span id="req-match1" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
+        </p>
+        <button class="btn" style="padding: 10px; margin-top: 5px;" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
+      </div>
+      
+      <!-- Match 2 -->
+      <div class="channel-card">
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <h4 style="margin: 0 0 5px 0; color: #00c6ff;">🏏 Mens Big Bash League</h4>
+          <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
         </div>
-        <div class="stat-card">
-          <span class="stat-value" id="pointsEarned">0</span>
-          <span class="stat-label">Total Points</span>
-        </div>
-      </div>
-
-      <!-- MONETAG ADS SECTION -->
-      <div class="section">
-        <h3>🎯 Earn Minutes (Watch Ads)</h3>
-        <div id="adsList" class="ad-list"></div>
-        <div id="adHistory" class="ad-history"></div>
-      </div>
-
-      <!-- STREAMING LINKS SECTION -->
-      <div class="section">
-        <h3>📺 Your Streaming Links</h3>
-        <input type="url" id="linkInput" placeholder="Paste streaming link here..." />
-        <button id="addLinkBtn" class="btn-secondary" style="margin-top: 10px;">Add Link</button>
-        <div class="links-counter" id="linksCounter">0/10</div>
-        <div id="linksList" class="links-list" style="margin-top: 15px;"></div>
-      </div>
-
-      <!-- Status Message -->
-      <div id="statusMessage" class="status-message">
-        <div id="statusIcon" style="font-size: 3rem; margin-bottom: 10px;">✅</div>
-        <div id="statusText" style="font-size: 1.2rem; margin-bottom: 20px;">Success!</div>
-        <button id="statusCloseBtn" class="btn-primary">Continue</button>
-      </div>
-
-      <!-- Ad Loading Overlay -->
-      <div id="adLoading" class="ad-loading">
-        <div class="spinner"></div>
-        <h3>Loading Advertisement...</h3>
-        <p style="margin-top: 10px; font-size: 0.9rem;">Please wait while we prepare your ad</p>
-      </div>
-
-      <!-- Stream Viewer -->
-      <div id="streamViewer" class="ad-viewer">
-        <div class="ad-header">
-          <h3>📺 Your Stream</h3>
-          <button id="closeStreamBtn" class="back-btn">Close</button>
-        </div>
-        <iframe id="streamFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #aaa;">Live from Cricket_live_streeming_VIP_channel_02</p>
+        <p style="margin: 0 0 8px 0; font-size: 13px;">
+          <span id="req-match2" style="color: #ffcc00; font-weight: bold;">Need 15 minutes to join</span>
+        </p>
+        <button class="btn" style="padding: 10px; margin-top: 5px;" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
       </div>
     </div>
   </div>
 
-  <!-- Telegram SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Countdown timer for link expiry -->
+  <div class="countdown" id="countdown">
+    ⏰ Link expires in: <span id="timer">10:00</span>
+  </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <!-- Force refresh button for debugging -->
+  <button class="btn force-refresh-btn" onclick="forceRefresh()">🔄 FORCE REFRESH (Click after kick)</button>
 
-  <script>
-    // ======================
-    // 🔧 FIREBASE CONFIG
-    // ======================
-    const firebaseConfig = {
-      apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
-      authDomain: "cricketteligram.firebaseapp.com",
-      projectId: "cricketteligram",
-      storageBucket: "cricketteligram.firebasestorage.app",
-      messagingSenderId: "1081096021896",
-      appId: "1:1081096021896:web:07d01b9f249e8505993c3d",
-      measurementId: "G-WCBX1VZD65"
-    };
+  <div class="card">
+    <h4>Debug Log</h4>
+    <pre id="debug" style="max-height:200px; overflow:auto; white-space:pre-wrap; background: rgba(0,0,0,0.12); padding: 8px; border-radius: 8px; font-size:12px; color:#fff;"></pre>
+  </div>
+</div>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+<script>
+/* ---------------- TELEGRAM USER ---------------- */
+const tg = Telegram.WebApp;
+tg.ready();
+const user = tg.initDataUnsafe.user;
+document.getElementById("username").innerText = "@" + (user.username || "player");
 
-    // ======================
-    // 🎯 AD CONFIGURATION
-    // ======================
-    const MINUTES_PER_AD = 3; // Changed to 3 minutes as requested
+/* ---------------- FIREBASE ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
+  authDomain: "cricketteligram.firebaseapp.com",
+  databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com",
+  projectId: "cricketteligram",
+  storageBucket: "cricketteligram.appspot.com"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const userRef = db.ref("users/" + user.id);
 
-    // Ad format definitions with Monetag functions
-    const AD_FORMATS = [
-      { 
-        id: 'rewarded-interstitial', 
-        name: '🏆 Rewarded Video', 
-        description: 'Watch full video for max rewards',
-        play: () => show_10340427(),
-        minutes: MINUTES_PER_AD
-      },
-      { 
-        id: 'rewarded-popup', 
-        name: '💥 Rewarded Popup', 
-        description: 'Quick popup ad, instant reward',
-        play: () => show_10340427('pop'),
-        minutes: Math.floor(MINUTES_PER_AD * 0.8) // 2.4 min for popup
-      },
-      { 
-        id: 'inapp-interstitial', 
-        name: '📺 In-App Interstitial', 
-        description: 'Full-screen immersive ad',
-        play: () => show_10340427({
-          type: 'inApp',
-          inAppSettings: {
-            frequency: 1,
-            capping: 0.1,    // 6 min cooldown
-            interval: 30,
-            timeout: 2,      // 2 sec delay
-            everyPage: false
-          }
-        }),
-        minutes: MINUTES_PER_AD
+/* ---------------- CHANNEL NAMES ---------------- */
+const CHANNEL_NAMES = {
+  match1: 'India vs Australia',
+  match2: 'England vs South Africa'
+};
+
+/* ---------------- DEBUG HELPERS ---------------- */
+function debugLog(label, obj) {
+  try {
+    const el = document.getElementById('debug');
+    if (!el) return;
+    const time = new Date().toLocaleTimeString();
+    const entry = `[${time}] ${label}: ${typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2)}\n`;
+    el.textContent = entry + el.textContent;
+  } catch (e) { /* ignore */ }
+}
+
+/* ---------------- FORCE REFRESH FUNCTION ---------------- */
+function forceRefresh() {
+  debugLog('FORCE REFRESH triggered', 'Clearing cache and reloading...');
+  window.userData = null;
+  
+  userRef.once("value").then(snap => {
+    const data = snap.val();
+    debugLog('Force refresh result', {
+      userId: user.id,
+      totalMinutes: data?.totalMinutes,
+      joinedChannels: data?.joinedChannels
+    });
+    
+    // Auto-clear expired pending joins (>5 min old)
+    const joinedChannels = data?.joinedChannels || {};
+    const updates = {};
+    let cleared = false;
+    
+    Object.keys(joinedChannels).forEach(channelId => {
+      const ch = joinedChannels[channelId];
+      // If marked as joined but very recent (<3 min), keep it
+      // If pending/old, clear it
+      const age = Date.now() - (ch.joinedAt || ch.pendingAt || 0);
+      if (ch.joinedAt && age < 3 * 60 * 1000) {
+        // Keep recent joins
+      } else if (ch.joinedAt && age > 3 * 60 * 1000) {
+        // Confirmed join (older than 3 min)
+      } else if (ch.pendingAt && age > 5 * 60 * 1000) {
+        // Clear expired pending
+        updates[`joinedChannels/${channelId}`] = null;
+        cleared = true;
+        debugLog('Cleared expired pending', channelId);
       }
-    ];
+    });
+    
+    if (cleared) {
+      userRef.update(updates);
+    }
+    
+    window.userData = data;
+    updateChannelButtons(data?.totalMinutes || 0, data?.joinedChannels || {});
+    alert('✅ State refreshed!');
+  }).catch(err => {
+    debugLog('Force refresh ERROR', err.message);
+  });
+}
 
-    // ======================
-    // 📱 TELEGRAM INTEGRATION
-    // ======================
-    const tg = window.Telegram?.WebApp;
-    tg?.ready();
-    const telegramUser = tg?.initDataUnsafe?.user || {};
-    const telegramId = telegramUser.id;
+/* ---------------- INIT USER ---------------- */
+userRef.once("value").then(snap => {
+  if (!snap.exists()) {
+    userRef.set({
+      uid: user.id,
+      username: user.username || "",
+      name: user.first_name || "",
+      totalMinutes: 0,
+      totalEarnings: 0,
+      adViews: 0,
+      lastEarnedAt: Date.now(),
+      joinedChannels: {}
+    });
+  }
+  debugLog('User initialized', user.id);
+});
 
-    // ======================
-    // 🧠 GLOBAL STATE
-    // ======================
-    let currentUser = null;
-    let links = [];
-    const MAX_LINKS = 10;
-    let currentAdSession = null;
+/* ---------------- REALTIME LISTENER WITH DEBUG ---------------- */
+userRef.on("value", snap => {
+  const d = snap.val();
+  debugLog('FIREBASE LISTENER TRIGGERED', {
+    hasData: !!d,
+    totalMinutes: d?.totalMinutes,
+    joinedChannelsKeys: Object.keys(d?.joinedChannels || {})
+  });
+  
+  if (!d) return;
+  
+  window.userData = d;
+  document.getElementById("minutes").innerText = d.totalMinutes || 0;
+  document.getElementById("earnings").innerText = (d.totalEarnings || 0).toFixed(2);
+  updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
+});
 
-    // ======================
-    // 🎛️ DOM ELEMENTS
-    // ======================
-    const loginScreen = document.getElementById('loginScreen');
-    const dashboardScreen = document.getElementById('dashboardScreen');
-    const loginBtn = document.getElementById('loginBtn');
-    const backBtn = document.getElementById('backBtn');
-    const telegramBtn = document.getElementById('telegramBtn');
-    const linkInput = document.getElementById('linkInput');
-    const addLinkBtn = document.getElementById('addLinkBtn');
-    const linksList = document.getElementById('linksList');
-    const linksCounter = document.getElementById('linksCounter');
-    const watchTimeStat = document.getElementById('watchTime');
-    const pointsEarnedStat = document.getElementById('pointsEarned');
-    const adsList = document.getElementById('adsList');
-    const adHistoryEl = document.getElementById('adHistory');
-    const statusMessage = document.getElementById('statusMessage');
-    const statusIcon = document.getElementById('statusIcon');
-    const statusText = document.getElementById('statusText');
-    const statusCloseBtn = document.getElementById('statusCloseBtn');
-    const streamViewer = document.getElementById('streamViewer');
-    const streamFrame = document.getElementById('streamFrame');
-    const closeStreamBtn = document.getElementById('closeStreamBtn');
-    const adLoading = document.getElementById('adLoading');
+/* ---------------- REWARD LOGIC ---------------- */
+function reward(minutes) {
+  userRef.transaction(d => {
+    if (!d) return d;
+    d.totalMinutes += minutes;
+    d.adViews += 1;
+    d.totalEarnings += minutes * 0.02;
+    d.lastEarnedAt = Date.now();
+    return d;
+  });
+}
 
-    // ======================
-    // 🚀 INITIALIZATION
-    // ======================
-    document.addEventListener('DOMContentLoaded', () => {
-      initFirebaseAuth();
-      setupEventListeners();
-      loadAdButtons();
-      loadAdHistory();
+/* ---------------- ADS SDK LOADER & FUNCTIONS ---------------- */
+let adSdkReady = false;
+
+function waitForSdk() {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const checkInterval = setInterval(() => {
+      if (typeof show_10340427 === 'function') {
+        adSdkReady = true;
+        clearInterval(checkInterval);
+        debugLog('Monetag SDK loaded successfully');
+        resolve();
+      } else if (attempts > 50) {
+        clearInterval(checkInterval);
+        debugLog('Monetag SDK failed to load after 5 seconds');
+        reject('SDK not loaded');
+      }
+      attempts++;
+    }, 100);
+  });
+}
+
+waitForSdk().catch(err => {
+  debugLog('SDK Error', err);
+});
+
+function loader(show) {
+  document.getElementById("loader").style.display = show ? "block" : "none";
+}
+
+async function watchRewarded() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
+  loader(true);
+  debugLog('Starting rewarded ad', null);
+  
+  try {
+    await show_10340427();
+    reward(2);
+    alert("🎉 +2 minutes earned!");
+    debugLog('Rewarded ad completed', '+2 min');
+  } catch (e) {
+    debugLog('Rewarded ad error', e.message);
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
+    loader(false);
+  }
+}
+
+async function watchPopup() {
+  if (!adSdkReady) {
+    alert('⚠️ Ad SDK still loading... wait a moment');
+    return;
+  }
+  
+  loader(true);
+  debugLog('Starting popup ad', null);
+  
+  try {
+    await show_10340427('pop');
+    reward(1);
+    alert("🔥 +1 minute earned!");
+    debugLog('Popup ad completed', '+1 min');
+  } catch (e) {
+    debugLog('Popup ad error', e.message);
+    alert("❌ Ad failed to load. Check connection.");
+  } finally {
+    loader(false);
+  }
+}
+
+/* ---------------- CHANNEL BUTTONS ---------------- */
+function updateChannelButtons(minutes, joinedChannels) {
+  Object.keys(CHANNEL_NAMES).forEach(channel => {
+    const btn = document.getElementById(`btn-${channel}`);
+    const reqText = document.getElementById(`req-${channel}`);
+    const status = document.getElementById(`status-${channel}`);
+    if (!btn || !reqText || !status) return;
+    
+    const channelData = joinedChannels?.[channel] || {};
+    const isJoined = channelData.joinedAt;
+    const inviteTime = channelData.inviteGeneratedAt || channelData.joinedAt;
+    
+    // If joined but within 3 minute window, show reset option
+    const isRecent = isJoined && (Date.now() - isJoined < 3 * 60 * 1000);
+    
+    if (isJoined && !isRecent) {
+      // Confirmed join - hide button
+      status.style.background = "#00ff00";
+      btn.style.display = "none";
+      reqText.innerHTML = "✅ ACCESS ACTIVE - Channel Joined";
+      reqText.style.color = "#00ff00";
+    } else if (isJoined && isRecent) {
+      // Recent join - show reset option for 3 minutes
+      status.style.background = "#ffaa00";
+      btn.innerHTML = "❌ DIDN'T WORK? RESET";
+      btn.style.background = "linear-gradient(135deg,#ff4757,#c44569)";
+      btn.disabled = false;
+      btn.style.display = "block";
+      btn.onclick = () => resetFailedJoin(channel);
+      reqText.innerHTML = `⏰ VERIFYING JOIN (${Math.ceil((3 * 60 * 1000 - (Date.now() - isJoined)) / 1000)}s)`;
+      reqText.style.color = "#ffaa00";
+    } else if (minutes >= 15) {
+      // Ready to join
+      status.style.background = "#00ff00";
+      btn.innerHTML = "🔓 JOIN NOW";
+      btn.style.background = "linear-gradient(135deg,#00d2d3,#00a8ff)";
+      btn.disabled = false;
+      btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
+      reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
+      reqText.style.color = "#00ff00";
+    } else {
+      // Locked
+      status.style.background = "#ffcc00";
+      btn.innerHTML = "🔒 LOCKED";
+      btn.style.background = "linear-gradient(135deg,#576574,#2c2c54)";
+      btn.disabled = true;
+      btn.style.display = "block";
+      btn.onclick = () => joinChannel(channel);
+      reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
+      reqText.style.color = "#ffcc00";
+    }
+  });
+}
+
+/* ---------------- RESET FAILED JOIN ---------------- */
+async function resetFailedJoin(channelId) {
+  if (confirm('🔄 Reset join status?\n\nUse this ONLY if joining failed. You will NOT be refunded minutes. Click "Force Refresh" after reset.')) {
+    await userRef.child(`joinedChannels/${channelId}`).remove();
+    debugLog('Reset failed join for channel', channelId);
+    alert('✅ Status reset! Try joining again.');
+    forceRefresh();
+  }
+}
+
+/* ---------------- JOIN CHANNEL ---------------- */
+async function joinChannel(channelId) {
+  if (!user) {
+    alert('❌ Open from Telegram Web App');
+    return;
+  }
+
+  const channelName = CHANNEL_NAMES[channelId];
+  const btn = document.getElementById(`btn-${channelId}`);
+  btn.innerHTML = '⏳ Generating...';
+  btn.disabled = true;
+
+  const payload = { userId: String(user.id), channelId };
+  const endpoint = 'https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite';
+
+  try {
+    debugLog('POST -> Worker', { url: endpoint, payload });
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
-    // ======================
-    // 🔐 FIREBASE AUTH
-    // ======================
-    function initFirebaseAuth() {
-      auth.onAuthStateChanged(async (user) => {
-        if (user) {
-          currentUser = user;
-          if (telegramId) await linkTelegramAccount(user);
-          await loadUserData();
-          showScreen('dashboard');
-        } else {
-          showScreen('login');
-        }
-      });
-    }
+    const data = await response.json().catch(() => ({}));
+    debugLog('Worker response', { ok: response.ok, status: response.status, data });
 
-    async function linkTelegramAccount(user) {
-      try {
-        await db.collection('users').doc(user.uid).set({
-          telegramId: telegramId,
-          telegramUsername: telegramUser.username || '',
-          lastActive: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
-      } catch (err) {
-        console.error('Telegram link error:', err);
-      }
-    }
-
-    // ======================
-    // 📥 LOAD USER DATA
-    // ======================
-    async function loadUserData() {
-      try {
-        const doc = await db.collection('users').doc(currentUser.uid).get();
-        if (doc.exists) {
-          const data = doc.data();
-          watchTimeStat.textContent = data.totalWatchTime || 0;
-          pointsEarnedStat.textContent = data.totalPoints || 0;
-          links = data.linksAdded || [];
-          updateLinksDisplay();
-        }
-      } catch (err) {
-        console.error('Load user error:', err);
-      }
-    }
-
-    // ======================
-    // 📋 LOAD AD HISTORY
-    // ======================
-    async function loadAdHistory() {
-      if (!currentUser) return;
+    if (response.ok && data.inviteLink) {
+      debugLog('Opening invite', data.inviteLink);
+      window.open(data.inviteLink, '_blank');
       
-      try {
-        const snapshot = await db.collection('ad_sessions')
-          .where('uid', '==', currentUser.uid)
-          .orderBy('timestamp', 'desc')
-          .limit(10)
-          .get();
-        
-        adHistoryEl.innerHTML = '<h4 style="color:#f39c12;margin-bottom:10px;">📊 Recent Activity</h4>';
-        
-        if (snapshot.empty) {
-          adHistoryEl.innerHTML += '<p style="opacity:0.6;font-size:0.8rem;">No ad history yet</p>';
-          return;
-        }
-
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const time = data.timestamp?.toDate().toLocaleTimeString() || new Date().toLocaleTimeString();
-          const status = data.status === 'completed' ? '✅' : '❌';
-          const type = data.adType || 'Unknown';
-          const minutes = data.minutesEarned || 0;
-          
-          const item = document.createElement('div');
-          item.className = 'ad-history-item';
-          item.innerHTML = `
-            <span>${status} <strong>${type}</strong> - +${minutes} min</span>
-            <span class="time">${time}</span>
-          `;
-          adHistoryEl.appendChild(item);
-        });
-      } catch (err) {
-        console.error('Load ad history error:', err);
-      }
+      alert('✅ Link generated! Click it within 10 minutes.\n\nAFTER joining, click "Force Refresh" to verify.');
+      return;
     }
 
-    // ======================
-    // 🎯 LOAD AD BUTTONS
-    // ======================
-    function loadAdButtons() {
-      adsList.innerHTML = '';
-      
-      AD_FORMATS.forEach(format => {
-        const isAvailable = checkAdAvailability(format.id);
-        const statusClass = isAvailable ? 'status-available' : 'status-cooldown';
-        const statusText = isAvailable ? 'Available' : 'Cooldown';
-        
-        const card = document.createElement('div');
-        card.className = `ad-card ${!isAvailable ? 'disabled' : ''}`;
-        card.onclick = isAvailable ? () => playMonetagAd(format) : null;
-        
-        card.innerHTML = `
-          <div class="ad-info">
-            <h4>${format.name}</h4>
-            <p>${format.description}</p>
-            <span class="ad-status ${statusClass}">${statusText}</span>
-          </div>
-          <div class="ad-reward">
-            <div class="minutes">+${format.minutes}</div>
-            <div class="label">minutes</div>
-          </div>
-        `;
-        adsList.appendChild(card);
-      });
+    if (data?.error && /already/i.test(data.error)) {
+      alert('ℹ️ Already a member! Click "Force Refresh" to update status.');
+      forceRefresh();
+      return;
     }
 
-    // ======================
-    // 🎮 PLAY MONETAG AD (CORE FUNCTION)
-    // ======================
-    async function playMonetagAd(format) {
-      // Prevent multiple sessions
-      if (currentAdSession) {
-        showStatus('⚠️', 'Please wait for current ad to finish', false);
-        return;
-      }
+    throw new Error(data.error || `HTTP ${response.status}: No invite link`);
 
-      // Check if Monetag SDK is loaded
-      if (typeof show_10340427 !== 'function') {
-        showStatus('❌', 'Ad system not ready. Retrying...', false);
-        
-        // Wait for SDK to load
-        setTimeout(() => {
-          if (typeof show_10340427 === 'function') {
-            playMonetagAd(format); // Retry
-          } else {
-            showStatus('❌', 'Ad system failed to load. Refresh app.', false);
-          }
-        }, 2000);
-        return;
-      }
+  } catch (error) {
+    debugLog('CRITICAL ERROR', error.message);
+    alert(`❌ ${error.message}\n\nCheck debug log.`);
+    btn.disabled = false;
+  }
+}
 
-      // Show loading overlay
-      adLoading.classList.add('show');
-
-      // Create session
-      const sessionId = generateUniqueId();
-      currentAdSession = {
-        sessionId,
-        adType: format.name,
-        adId: format.id,
-        minutesToEarn: format.minutes,
-        startTime: Date.now(),
-        status: 'started'
-      };
-
-      try {
-        // Save session to Firestore
-        await db.collection('ad_sessions').doc(sessionId).set({
-          ...currentAdSession,
-          uid: currentUser.uid,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Hide loading before showing ad
-        adLoading.classList.remove('show');
-
-        // Call Monetag ad with proper error handling
-        const adPromise = format.play();
-        
-        adPromise.then(async () => {
-          // Ad completed successfully
-          currentAdSession.status = 'completed';
-          await completeAdReward(sessionId, format.minutes);
-        }).catch(async (error) => {
-          // Ad failed or user closed early
-          currentAdSession.status = 'failed';
-          await db.collection('ad_sessions').doc(sessionId).update({
-            status: 'failed',
-            error: error.message,
-            completedAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-          showStatus('❌', 'Ad was not completed', false);
-          currentAdSession = null;
-          loadAdButtons();
-        });
-
-      } catch (err) {
-        console.error('Monetag ad error:', err);
-        adLoading.classList.remove('show');
-        showStatus('❌', 'Failed to load ad', false);
-        currentAdSession = null;
-      }
-    }
-
-    // ======================
-    // ✅ COMPLETE AD REWARD
-    // ======================
-    async function completeAdReward(sessionId, minutesEarned) {
-      try {
-        // Update session
-        await db.collection('ad_sessions').doc(sessionId).update({
-          status: 'completed',
-          minutesEarned: minutesEarned,
-          completedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Award user
-        await db.collection('users').doc(currentUser.uid).update({
-          totalWatchTime: firebase.firestore.FieldValue.increment(minutesEarned),
-          totalPoints: firebase.firestore.FieldValue.increment(minutesEarned),
-          lastActive: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        // Record last played time for cooldown
-        localStorage.setItem(`lastAd_${currentAdSession.adId}`, Date.now().toString());
-
-        // Hide loading
-        adLoading.classList.remove('show');
-
-        // Show success
-        showStatus('✅', `+${minutesEarned} minutes earned!`);
-
-        // Refresh data
-        await loadUserData();
-        await loadAdHistory();
-        loadAdButtons();
-
-      } catch (err) {
-        console.error('Reward completion error:', err);
-        showStatus('❌', 'Failed to award reward', false);
-      } finally {
-        currentAdSession = null;
-      }
-    }
-
-    // ======================
-    // ⏰ AD COOLDOWN CHECK
-    // ======================
-    function checkAdAvailability(adId) {
-      const lastPlayed = localStorage.getItem(`lastAd_${adId}`);
-      if (!lastPlayed) return true;
-      
-      const cooldownMs = 6 * 60 * 1000; // 6 minutes
-      const now = Date.now();
-      return (now - parseInt(lastPlayed)) > cooldownMs;
-    }
-
-    // ======================
-    // 📺 OPEN/CLOSE STREAM
-    // ======================
-    function openStream(url) {
-      streamFrame.src = url;
-      streamViewer.classList.add('active');
-      backBtn.style.display = 'inline-block';
-      toggleDashboardUI(false);
-    }
-
-    function closeStreamViewer() {
-      streamViewer.classList.remove('active');
-      streamFrame.src = '';
-      backBtn.style.display = 'none';
-      toggleDashboardUI(true);
-    }
-
-    // ======================
-    // 🖥️ UI UPDATES
-    // ======================
-    function updateLinksDisplay() {
-      linksList.innerHTML = '';
-      linksCounter.textContent = `${links.length}/${MAX_LINKS}`;
-      
-      const totalEarnedMinutes = parseInt(watchTimeStat.textContent) || 0;
-      
-      links.forEach(link => {
-        const isUnlocked = totalEarnedMinutes >= MINUTES_PER_AD;
-        if (isUnlocked && !link.isUnlocked) {
-          link.isUnlocked = true;
-          db.collection('users').doc(currentUser.uid).set({
-            linksAdded: links
-          }, { merge: true });
-        }
-        
-        const statusBadge = isUnlocked ? 
-          '<div class="badge" style="background: rgba(46,204,113,0.3); color: #2ecc71;">✅ Ready</div>' : 
-          `<div class="badge">🔒 Need ${MINUTES_PER_AD}m</div>`;
-        
-        const actionButton = isUnlocked ?
-          `<button class="earn-btn" onclick="openStream('${link.url}')">▶️ Watch</button>` :
-          `<button class="earn-btn" disabled>${MINUTES_PER_AD}m to unlock</button>`;
-        
-        const el = document.createElement('div');
-        el.className = 'link-item';
-        el.innerHTML = `
-          <div class="link-url">${link.url}</div>
-          <div class="link-actions">${statusBadge}${actionButton}</div>
-        `;
-        linksList.appendChild(el);
-      });
-    }
-
-    function toggleDashboardUI(show) {
-      const elements = document.querySelectorAll('.user-stats, .section');
-      elements.forEach(el => el.style.display = show ? '' : 'none');
-    }
-
-    function showStatus(icon, text, autoHide = true) {
-      statusIcon.textContent = icon;
-      statusText.textContent = text;
-      statusMessage.classList.add('show');
-      if (autoHide) setTimeout(hideStatusMessage, 5000);
-    }
-
-    function hideStatusMessage() {
-      statusMessage.classList.remove('show');
-    }
-
-    // ======================
-    // 🧭 NAVIGATION & UTILS
-    // ======================
-    function showScreen(name) {
-      loginScreen.classList.toggle('active', name === 'login');
-      dashboardScreen.classList.toggle('active', name === 'dashboard');
-    }
-
-    function goBack() {
-      if (streamViewer.classList.contains('active')) closeStreamViewer();
-    }
-
-    function openTelegram() {
-      const url = telegramUser.username ? `https://t.me/${encodeURIComponent(telegramUser.username)}` : 'https://t.me/';
-      window.open(url, '_blank');
-    }
-
-    function isValidUrl(str) {
-      try { return Boolean(new URL(str)); } catch { return false; }
-    }
-
-    function generateUniqueId() {
-      return `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    // ======================
-    // 🔁 PERIODIC REFRESH
-    // ======================
-    setInterval(() => {
-      if (currentUser) loadAdButtons();
-    }, 30000);
-  </script>
+/* ---------------- THEME ---------------- */
+document.documentElement.style.colorScheme = 'dark';
+</script>
 </body>
 </html>
