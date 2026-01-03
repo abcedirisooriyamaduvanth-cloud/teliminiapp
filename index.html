@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Cricket Rewards</title>
+<title>Cricket Franchise Rewards</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <!-- Telegram -->
@@ -22,7 +22,7 @@
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(circle at top, #0f1b3d, #050814);
+  background: radial-gradient(circle at top, #2b0000, #050000);
   color: #fff;
 }
 
@@ -41,83 +41,105 @@ body {
 .header h3 {
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 1px;
+  color: #ffb703;
+  text-shadow: 0 0 12px #ff4500;
 }
 
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.03));
+  background: linear-gradient(180deg, rgba(255,80,0,0.18), rgba(255,255,255,0.04));
   border-radius: 18px;
   padding: 16px;
   margin-top: 14px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  animation: fadeUp .5s ease;
+  box-shadow: 0 0 25px rgba(255,69,0,.25);
+  animation: fadeUp .6s ease;
 }
 
+/* STEPS */
 .step {
   display: flex;
   gap: 10px;
   align-items: center;
   margin-bottom: 10px;
 }
-
 .step span {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg,#00c6ff,#0072ff);
+  background: linear-gradient(135deg,#ff512f,#dd2476);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
 }
 
+/* BUTTONS */
 .btn {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   margin-top: 10px;
-  background: linear-gradient(135deg,#00c6ff,#0072ff);
+  background: linear-gradient(135deg,#ff512f,#f09819);
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   color: #fff;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
-  transition: .2s;
+  box-shadow: 0 0 18px rgba(255,120,0,.7);
+  transition: .15s;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn:active { transform: scale(.96); }
-.btn:disabled { opacity: .5; }
+.btn:active { transform: scale(.95); }
+.btn:disabled { opacity: .45; box-shadow:none; }
 
-.loader {
-  display: none;
-  text-align: center;
+/* FLOATING +MIN */
+.float {
+  position: absolute;
+  animation: floatUp 1s ease forwards;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+@keyframes floatUp {
+  from { opacity:1; transform:translateY(0); }
+  to { opacity:0; transform:translateY(-40px); }
+}
+
+/* PROGRESS */
+.progress-bar {
+  width: 100%;
+  height: 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
   margin-top: 8px;
-  color: #ffcc00;
+}
+.progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg,#ff512f,#f09819,#ffe259);
+  transition: width .4s ease;
+  box-shadow: 0 0 12px #ff9800;
 }
 
-.progress-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.progress-ring {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  background:
-    conic-gradient(#00ffcc calc(var(--p) * 1%), rgba(255,255,255,.15) 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Orbitron';
-  font-size: 14px;
-}
-
+/* CHANNEL */
 .channel-card {
-  background: linear-gradient(145deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
-  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(255,90,0,.25), rgba(0,0,0,.4));
+  border-radius: 16px;
   padding: 14px;
-  border: 1px solid rgba(255,255,255,.15);
   margin-bottom: 14px;
+  border: 1px solid rgba(255,140,0,.35);
+}
+
+.unlock {
+  animation: unlockPulse 1s infinite;
+}
+
+@keyframes unlockPulse {
+  0% { box-shadow: 0 0 10px #ff9800; }
+  50% { box-shadow: 0 0 28px #ff4500; }
+  100% { box-shadow: 0 0 10px #ff9800; }
 }
 
 .status-indicator {
@@ -126,16 +148,8 @@ body {
   border-radius: 50%;
 }
 
-.countdown {
-  display: none;
-  text-align: center;
-  color: #ffcc00;
-  font-weight: bold;
-  margin-top: 10px;
-}
-
 @keyframes fadeUp {
-  from { opacity:0; transform:translateY(20px); }
+  from { opacity:0; transform:translateY(25px); }
   to { opacity:1; transform:translateY(0); }
 }
 </style>
@@ -144,161 +158,120 @@ body {
 <body>
 <div class="app">
 
-  <!-- HEADER -->
-  <div class="header">
-    <h3>🏏 CRICKET QUEST</h3>
-    <small id="username"></small>
-  </div>
+<!-- HEADER -->
+<div class="header">
+  <h3>🔥 CRICKET FRANCHISE</h3>
+  <small id="username"></small>
+</div>
 
-  <!-- HOW IT WORKS -->
-  <div class="card">
-    <h4>🎮 How It Works</h4>
-    <div class="step"><span>1</span> Watch ads & earn minutes</div>
-    <div class="step"><span>2</span> Reach <b>15 minutes</b></div>
-    <div class="step"><span>3</span> Match unlocks</div>
-    <div class="step"><span>4</span> Join channel → time starts reducing</div>
-  </div>
+<!-- HOW IT WORKS -->
+<div class="card">
+  <h4>🎮 Game Rules</h4>
+  <div class="step"><span>1</span> Watch ads → earn unlimited minutes</div>
+  <div class="step"><span>2</span> Reach <b>15 min</b> to unlock matches</div>
+  <div class="step"><span>3</span> Join channel → time starts reducing</div>
+</div>
 
-  <!-- PROGRESS -->
-  <div class="card progress-wrap">
-    <div>
-      <h4>Your Power</h4>
-      <p>⏱ Minutes: <b id="minutes">0</b></p>
-      <p>💰 Earnings: $<b id="earnings">0.00</b></p>
+<!-- STATS -->
+<div class="card">
+  <h4>🔥 Your Power</h4>
+  <p>⏱ Minutes: <b id="minutes">0</b></p>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
+</div>
+
+<!-- EARN -->
+<div class="card">
+  <h4>⚡ Earn Power</h4>
+  <button class="btn" onclick="earn(this,2)">🎬 Watch Ad (+2 min)</button>
+  <button class="btn" onclick="earn(this,1)">🔥 Popup Ad (+1 min)</button>
+</div>
+
+<!-- MATCH -->
+<div class="card">
+  <h4>🏏 Live Match</h4>
+  <div class="channel-card" id="matchCard">
+    <div style="display:flex;justify-content:space-between">
+      <b>Franchise League Live</b>
+      <span id="status-match1" class="status-indicator"></span>
     </div>
-    <div class="progress-ring" id="ring" style="--p:0">
-      <span id="ringText">0/15</span>
-    </div>
+    <p id="req-match1">Need 15 minutes</p>
+    <button class="btn" id="btn-match1" onclick="joinChannel('match1')">🔒 LOCKED</button>
   </div>
-
-  <!-- EARN -->
-  <div class="card">
-    <h4>⚡ Earn Minutes</h4>
-    <button class="btn" onclick="watchRewarded()">🎬 Watch Ad (+2 min)</button>
-    <button class="btn" onclick="watchPopup()">🔥 Popup Ad (+1 min)</button>
-    <div class="loader" id="loader">Loading ad...</div>
-  </div>
-
-  <!-- MATCHES -->
-  <div class="card">
-    <h4>🏆 Live Matches</h4>
-
-    <div class="channel-card">
-      <div style="display:flex;justify-content:space-between">
-        <b>Bangladesh Premier League</b>
-        <span id="status-match1" class="status-indicator"></span>
-      </div>
-      <p id="req-match1">Need 15 minutes</p>
-      <button class="btn" id="btn-match1" onclick="joinChannel('match1')">Join</button>
-    </div>
-
-    <div class="channel-card">
-      <div style="display:flex;justify-content:space-between">
-        <b>Big Bash League</b>
-        <span id="status-match2" class="status-indicator"></span>
-      </div>
-      <p id="req-match2">Need 15 minutes</p>
-      <button class="btn" id="btn-match2" onclick="joinChannel('match2')">Join</button>
-    </div>
-  </div>
-
-  <div class="countdown" id="countdown">
-    ⏰ Link expires in <span id="timer">10:00</span>
-  </div>
+</div>
 
 </div>
 
 <script>
 /* TELEGRAM */
-const tg = Telegram.WebApp;
-tg.ready();
+const tg = Telegram.WebApp; tg.ready();
 const user = tg.initDataUnsafe.user;
-document.getElementById("username").innerText = "@" + (user?.username || "player");
+document.getElementById("username").innerText = "@"+(user?.username||"player");
 
 /* FIREBASE */
 firebase.initializeApp({
-  apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
-  authDomain: "cricketteligram.firebaseapp.com",
-  databaseURL: "https://cricketteligram-default-rtdb.firebaseio.com",
-  projectId: "cricketteligram"
+  apiKey:"AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
+  databaseURL:"https://cricketteligram-default-rtdb.firebaseio.com"
 });
-
-const db = firebase.database();
-const userRef = db.ref("users/" + user.id);
+const db=firebase.database();
+const userRef=db.ref("users/"+user.id);
 
 /* INIT */
-userRef.once("value").then(s => {
-  if (!s.exists()) {
-    userRef.set({
-      uid: user.id,
-      username: user.username || "",
-      totalMinutes: 0,
-      totalEarnings: 0,
-      adViews: 0,
-      joinedChannels: {}
-    });
-  }
+userRef.once("value").then(s=>{
+ if(!s.exists()) userRef.set({uid:user.id,totalMinutes:0,joinedChannels:{}});
 });
 
 /* REALTIME */
-userRef.on("value", s => {
-  const d = s.val();
-  if (!d) return;
-  document.getElementById("minutes").innerText = d.totalMinutes || 0;
-  document.getElementById("earnings").innerText = (d.totalEarnings || 0).toFixed(2);
-  const p = Math.min((d.totalMinutes || 0) / 15 * 100, 100);
-  document.getElementById("ring").style.setProperty("--p", p);
-  document.getElementById("ringText").innerText = Math.min(d.totalMinutes,15)+"/15";
-  updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
+userRef.on("value",s=>{
+ const d=s.val(); if(!d) return;
+ const m=d.totalMinutes||0;
+ document.getElementById("minutes").innerText=m;
+ document.getElementById("progress").style.width=Math.min(m/15*100,100)+"%";
+
+ const btn=document.getElementById("btn-match1");
+ const req=document.getElementById("req-match1");
+ const card=document.getElementById("matchCard");
+ const st=document.getElementById("status-match1");
+
+ if(m>=15){
+   btn.disabled=false;
+   btn.innerText="🔥 JOIN MATCH";
+   btn.classList.add("unlock");
+   req.innerText="UNLOCKED!";
+   st.style.background="#00ff00";
+ } else {
+   btn.disabled=true;
+   btn.innerText="🔒 LOCKED";
+   req.innerText=`Need ${15-m} more minutes`;
+   st.style.background="#ffaa00";
+ }
 });
 
-/* REWARD */
-function reward(m) {
-  userRef.transaction(d => {
-    d.totalMinutes += m;
-    d.totalEarnings += m * 0.02;
-    d.adViews += 1;
-    return d;
-  });
+/* EARN */
+function earn(btn,min){
+ showFloat(btn,"+"+min+"m");
+ userRef.transaction(d=>{d.totalMinutes+=min;return d;});
 }
 
-/* ADS */
-function loader(v){document.getElementById("loader").style.display=v?"block":"none";}
-async function watchRewarded(){loader(true);await show_10340427();reward(2);loader(false);}
-async function watchPopup(){loader(true);await show_10340427('pop');reward(1);loader(false);}
-
-/* CHANNELS */
-const CHANNELS={match1:'A',match2:'B'};
-function updateChannelButtons(m,j){
-  Object.keys(CHANNELS).forEach(c=>{
-    const btn=document.getElementById(`btn-${c}`);
-    const req=document.getElementById(`req-${c}`);
-    const st=document.getElementById(`status-${c}`);
-    if(j[c]?.joinedAt){
-      st.style.background="#00ff00";
-      btn.style.display="none";
-      req.innerText="✅ Joined";
-    } else if(m>=15){
-      st.style.background="#00ff00";
-      btn.disabled=false;
-      req.innerText="Unlocked";
-    } else {
-      st.style.background="#ffaa00";
-      btn.disabled=true;
-      req.innerText=`Need ${15-m} more minutes`;
-    }
-  });
+/* FLOAT */
+function showFloat(btn,text){
+ const f=document.createElement("div");
+ f.className="float";
+ f.style.left="50%";
+ f.style.top="10px";
+ f.innerText=text;
+ btn.appendChild(f);
+ setTimeout(()=>f.remove(),1000);
 }
 
 /* JOIN */
 async function joinChannel(id){
-  await fetch('https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({userId:String(user.id),channelId:id})
-  }).then(r=>r.json()).then(d=>{
-    if(d.inviteLink) window.open(d.inviteLink,'_blank');
-  });
+ await fetch("https://ancient-shadow-773c.samaraedirisooriya123.workers.dev/api/generate-invite",{
+  method:"POST",
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({userId:String(user.id),channelId:id})
+ }).then(r=>r.json()).then(d=>{
+  if(d.inviteLink) window.open(d.inviteLink,"_blank");
+ });
 }
 </script>
 </body>
