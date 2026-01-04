@@ -460,7 +460,7 @@ body {
     </div>
     <div class="step">
       <div class="step-number">2</div>
-      <div class="step-text">Collect <span style="color: var(--accent);">15 minutes</span> to unlock channels</div>
+      <div class="step-text">Collect <span style="color: var(--accent);">8 ad clicks</span> to unlock channels (1‑min ads = 1 click)</div>
     </div>
     <div class="step">
       <div class="step-number">3</div>
@@ -494,7 +494,8 @@ body {
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill">0%</div>
       </div>
-      <div class="progress-text" id="progressText">Need 15 minutes to unlock channels</div>
+      <div class="progress-text" id="progressText">Need 8 ad clicks to unlock channels</div>
+      <div class="progress-text" id="dayPassNote" style="font-size:0.9em; margin-top:6px; color:#ddd;">Day Pass: +180 minutes (24h) — get it after 8 ad clicks or by watching the 2‑min rewarded ad.</div>
     </div>
   </div>
 
@@ -531,7 +532,7 @@ body {
         <span class="status-indicator" id="status-match1" style="background: #ff4d4d;"></span>
       </div>
       <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_01</p>
-      <p class="channel-requirement" id="req-match1">Need 15 minutes to join</p>
+      <p class="channel-requirement" id="req-match1">Need 8 ad clicks to join</p>
       <button class="btn" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
     </div>
     
@@ -542,7 +543,7 @@ body {
         <span class="status-indicator" id="status-match2" style="background: #ff4d4d;"></span>
       </div>
       <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_02</p>
-      <p class="channel-requirement" id="req-match2">Need 15 minutes to join</p>
+      <p class="channel-requirement" id="req-match2">Need 8 ad clicks to join</p>
       <button class="btn" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
     </div>
   </div>
@@ -592,20 +593,38 @@ const CHANNEL_NAMES = {
 
 /* ==================== PROGRESS BAR ==================== */
 function updateProgress(minutes) {
-  const percentage = Math.min((minutes / 15) * 100, 100);
   const progressFill = document.getElementById('progressFill');
   const progressText = document.getElementById('progressText');
-  
+  const ud = window.userData || {};
+  const clicks = ud.adClickCount || 0;
+  const dayPassActive = ud.dayPassExpiresAt && Date.now() < ud.dayPassExpiresAt;
+
+  let percentage = 0;
+  if (dayPassActive) {
+    percentage = 100;
+    progressText.textContent = '✅ Day Pass Active (24h)';
+    progressText.style.color = 'var(--success)';
+    const expiry = new Date(ud.dayPassExpiresAt);
+    const note = document.getElementById('dayPassNote');
+    if (note) note.textContent = `Day Pass active until ${expiry.toLocaleString()}. Enjoy access for 24 hours.`;
+  } else {
+    percentage = Math.min((clicks / 8) * 100, 100);
+    if (clicks >= 8) {
+      progressText.textContent = '✅ You qualified by clicks!';
+      progressText.style.color = 'var(--success)';
+      const note = document.getElementById('dayPassNote');
+      if (note) note.textContent = 'Day Pass will activate automatically when you claim or after qualification.';
+    } else {
+      const remaining = 8 - Math.floor(clicks);
+      progressText.textContent = `Get Day Pass: ${remaining} more ad clicks (or watch 2-min ad)`;
+      progressText.style.color = 'var(--accent)';
+      const note = document.getElementById('dayPassNote');
+      if (note) note.textContent = 'Day Pass: +180 minutes (24h) — get it after 8 ad clicks or by watching the 2‑min rewarded ad.';
+    }
+  }
+
   progressFill.style.width = percentage + '%';
   progressFill.textContent = Math.floor(percentage) + '%';
-  
-  if (minutes >= 15) {
-    progressText.textContent = '✅ Channels Unlocked!';
-    progressText.style.color = 'var(--success)';
-  } else {
-    progressText.textContent = `Need ${15 - minutes} more minutes to unlock channels`;
-    progressText.style.color = 'var(--accent)';
-  }
 }
 
 /* ==================== FORCE REFRESH ==================== */
@@ -656,6 +675,8 @@ userRef.once("value").then(snap => {
       totalMinutes: 0,
       totalEarnings: 0,
       adViews: 0,
+      adClickCount: 0,
+      dayPassExpiresAt: 0,
       lastEarnedAt: Date.now(),
       joinedChannels: {}
     });
@@ -673,8 +694,10 @@ userRef.on("value", snap => {
   updateChannelButtons(d.totalMinutes || 0, d.joinedChannels || {});
   updateProgress(d.totalMinutes || 0);
   
-  // Hide tutorial after 15 minutes
-  if (d.totalMinutes >= 15) {
+  // Hide tutorial after unlocking via clicks or day pass
+  const clicks = d.adClickCount || 0;
+  const dayPassActive = d.dayPassExpiresAt && Date.now() < d.dayPassExpiresAt;
+  if (dayPassActive || clicks >= 8) {
     document.getElementById('tutorial').style.display = 'none';
   }
 });
@@ -727,8 +750,18 @@ async function watchRewarded() {
   
   try {
     await show_10340427();
-    reward(2);
-    alert("🎉 +2 minutes earned!");
+    // Special: one-time 2-min rewarded ad grants immediate Day Pass (180 minutes / 24h)
+    await userRef.transaction(d => {
+      if (!d) return d;
+      d.totalMinutes = (d.totalMinutes || 0) + 180;
+      d.adViews = (d.adViews || 0) + 1;
+      d.totalEarnings = (d.totalEarnings || 0) + 180 * 0.02;
+      d.adClickCount = 8; // mark as full
+      d.dayPassExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
+      d.lastEarnedAt = Date.now();
+      return d;
+    });
+    alert("🎉 Day Pass granted: +180 minutes (24h)!");
   } catch (e) {
     alert("❌ Ad failed to load. Check connection.");
   } finally {
@@ -746,8 +779,30 @@ async function watchPopup() {
   
   try {
     await show_10340427('pop');
-    reward(1);
-    alert("🔥 +1 minute earned!");
+    // 1-minute ad: normal minute reward and counts as 1 click toward 8 clicks for Day Pass
+    let grantedDayPass = false;
+    await userRef.transaction(d => {
+      if (!d) return d;
+      d.totalMinutes = (d.totalMinutes || 0) + 1;
+      d.adViews = (d.adViews || 0) + 1;
+      d.totalEarnings = (d.totalEarnings || 0) + 1 * 0.02;
+      d.adClickCount = (d.adClickCount || 0) + 1;
+      // if reached 8 clicks and no active day pass, grant day pass
+      const now = Date.now();
+      const hasActive = d.dayPassExpiresAt && now < d.dayPassExpiresAt;
+      if (!hasActive && d.adClickCount >= 8) {
+        d.totalMinutes = (d.totalMinutes || 0) + 180;
+        d.dayPassExpiresAt = now + 24 * 60 * 60 * 1000;
+        grantedDayPass = true;
+      }
+      d.lastEarnedAt = now;
+      return d;
+    });
+    if (grantedDayPass) {
+      alert('🎉 Day Pass granted after 8 clicks: +180 minutes (24h)!');
+    } else {
+      alert("🔥 +1 minute earned!");
+    }
   } catch (e) {
     alert("❌ Ad failed to load. Check connection.");
   } finally {
@@ -757,6 +812,9 @@ async function watchPopup() {
 
 /* ==================== CHANNEL BUTTONS ==================== */
 function updateChannelButtons(minutes, joinedChannels) {
+  const ud = window.userData || {};
+  const clicks = ud.adClickCount || 0;
+  const dayPassActive = ud.dayPassExpiresAt && Date.now() < ud.dayPassExpiresAt;
   Object.keys(CHANNEL_NAMES).forEach(channel => {
     const btn = document.getElementById(`btn-${channel}`);
     const reqText = document.getElementById(`req-${channel}`);
@@ -781,14 +839,14 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.onclick = () => resetFailedJoin(channel);
       reqText.innerHTML = `⏰ VERIFYING JOIN (${Math.ceil((3 * 60 * 1000 - (Date.now() - isJoined)) / 1000)}s)`;
       reqText.style.color = "#ffaa00";
-    } else if (minutes >= 15) {
+    } else if (dayPassActive || clicks >= 8) {
       status.style.background = "#00ff88";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.className = "btn btn-success";
       btn.disabled = false;
       btn.style.display = "block";
       btn.onclick = () => joinChannel(channel);
-      reqText.innerHTML = "✅ YOU QUALIFY (15+ MINUTES)";
+      reqText.innerHTML = "✅ YOU QUALIFY (Day Pass / 8 clicks)";
       reqText.style.color = "#00ff88";
     } else {
       status.style.background = "#ffcc00";
@@ -797,7 +855,8 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.disabled = true;
       btn.style.display = "block";
       btn.onclick = () => joinChannel(channel);
-      reqText.innerHTML = `NEED ${15 - minutes} MORE MINUTES`;
+      const remaining = Math.max(8 - clicks, 0);
+      reqText.innerHTML = `NEED ${remaining} MORE CLICKS`;
       reqText.style.color = "#ffcc00";
     }
   });
