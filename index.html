@@ -533,7 +533,7 @@ body {
       </div>
       <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_01</p>
       <p class="channel-requirement" id="req-match1">Need 8 ad clicks to join</p>
-      <button class="btn" onclick="joinChannel('match1')" id="btn-match1">Join Match</button>
+      <button class="btn" id="btn-match1">Join Match</button>
     </div>
     
     <!-- Match 2 -->
@@ -544,7 +544,7 @@ body {
       </div>
       <p class="channel-info">Live from Cricket_live_streeming_VIP_channel_02</p>
       <p class="channel-requirement" id="req-match2">Need 8 ad clicks to join</p>
-      <button class="btn" onclick="joinChannel('match2')" id="btn-match2">Join Match</button>
+      <button class="btn" id="btn-match2">Join Match</button>
     </div>
   </div>
 
@@ -854,7 +854,7 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.className = "btn";
       btn.disabled = true;
       btn.style.display = "block";
-      btn.onclick = () => joinChannel(channel);
+      btn.onclick = null;
       const remaining = Math.max(8 - clicks, 0);
       reqText.innerHTML = `NEED ${remaining} MORE CLICKS`;
       reqText.style.color = "#ffcc00";
