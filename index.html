@@ -505,12 +505,12 @@ body {
     <button class="btn" onclick="watchRewarded()">
       <span style="font-size: 1.5em; margin-right: 10px;">🎬</span>
       Watch Video Ad
-      <div style="float: right; color: var(--accent);">+2 MIN</div>
+      <div style="float: right; color: var(--accent);">+180 MIN</div>
     </button>
     <button class="btn btn-warning" onclick="watchPopup()">
       <span style="font-size: 1.5em; margin-right: 10px;">🔥</span>
       Popup Ad
-      <div style="float: right; color: #fff;">+1 MIN</div>
+      <div style="float: right; color: #fff;">+80 MIN</div>
     </button>
     <div class="loader" id="loader">
       <div class="loader-spinner"></div>
@@ -747,6 +747,15 @@ async function watchRewarded() {
       d.lastEarnedAt = Date.now();
       return d;
     });
+    // Immediate local UI update for responsiveness
+    window.userData = window.userData || {};
+    window.userData.totalMinutes = (window.userData.totalMinutes || 0) + 180;
+    window.userData.adClickCount = (window.userData.adClickCount || 0) + 1;
+    window.userData.totalEarnings = (window.userData.totalEarnings || 0) + 180 * 0.02;
+    document.getElementById('minutes').innerText = window.userData.totalMinutes;
+    document.getElementById('earnings').innerText = window.userData.totalEarnings.toFixed(2);
+    updateProgress(window.userData.totalMinutes);
+    updateChannelButtons(window.userData.totalMinutes, window.userData.joinedChannels || {});
     alert("🎉 +180 minutes! (Click counted toward unlock)");
   } catch (e) {
     alert("❌ Ad failed to load. Check connection.");
@@ -775,6 +784,15 @@ async function watchPopup() {
       d.lastEarnedAt = Date.now();
       return d;
     });
+    // Immediate local UI update for responsiveness
+    window.userData = window.userData || {};
+    window.userData.totalMinutes = (window.userData.totalMinutes || 0) + 80;
+    window.userData.adClickCount = (window.userData.adClickCount || 0) + 1;
+    window.userData.totalEarnings = (window.userData.totalEarnings || 0) + 80 * 0.02;
+    document.getElementById('minutes').innerText = window.userData.totalMinutes;
+    document.getElementById('earnings').innerText = window.userData.totalEarnings.toFixed(2);
+    updateProgress(window.userData.totalMinutes);
+    updateChannelButtons(window.userData.totalMinutes, window.userData.joinedChannels || {});
     alert("🔥 +80 minutes! (Click counted toward unlock)");
   } catch (e) {
     alert("❌ Ad failed to load. Check connection.");
@@ -811,7 +829,7 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.onclick = () => resetFailedJoin(channel);
       reqText.innerHTML = `⏰ VERIFYING JOIN (${Math.ceil((3 * 60 * 1000 - (Date.now() - isJoined)) / 1000)}s)`;
       reqText.style.color = "#ffaa00";
-    } else if (dayPassActive || clicks >= 8) {
+    } else if (clicks >= 8) {
       status.style.background = "#00ff88";
       btn.innerHTML = "🔓 JOIN NOW";
       btn.className = "btn btn-success";
@@ -825,7 +843,7 @@ function updateChannelButtons(minutes, joinedChannels) {
       btn.innerHTML = "🔒 LOCKED";
       btn.className = "btn";
       btn.disabled = true;
-      btn.style.display = "block";
+      btn.style.display = "none";
       btn.onclick = null;
       const remaining = Math.max(8 - clicks, 0);
       reqText.innerHTML = `NEED ${remaining} MORE CLICKS`;
