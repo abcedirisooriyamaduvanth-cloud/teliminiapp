@@ -809,12 +809,22 @@ async function watchRewarded() {
   } catch (e) {
     clearTimeout(timeoutHandle);
     const errorMsg = String(e.message || e);
-    console.error('❌ Rewarded ad error:', errorMsg);
-    console.error('Error details:', e);
+    console.error('❌ FULL ERROR OBJECT:', e);
+    console.error('❌ Error message:', errorMsg);
+    console.error('❌ Error type:', e.name || 'Unknown');
+    console.error('❌ Error code:', e.code || 'No code');
+    console.error('❌ Stack:', e.stack);
+    
+    // Log raw error for debugging
+    if (e.response) console.error('Response:', e.response);
+    if (e.statusCode) console.error('Status Code:', e.statusCode);
     
     // Diagnose the error source
     let userMsg = "❌ Ad failed to load.\n\n";
-    if (errorMsg.includes('permission')) {
+    let errorType = "UNKNOWN";
+    
+    if (errorMsg.toLowerCase().includes('permission') || errorMsg.toLowerCase().includes('denied')) {
+      errorType = "PERMISSION_DENIED";
       userMsg += "🔒 PERMISSION DENIED\n\n";
       userMsg += "This could be:\n";
       userMsg += "• Monetag blocking your region\n";
@@ -822,18 +832,39 @@ async function watchRewarded() {
       userMsg += "• Browser privacy settings too strict\n";
       userMsg += "• Firewall blocking libtl.com\n\n";
       userMsg += "Try: Disable VPN/ad blocker, refresh app";
-    } else if (errorMsg.includes('timeout')) {
+    } else if (errorMsg.toLowerCase().includes('timeout')) {
+      errorType = "TIMEOUT";
       userMsg += "⏱️ TIMEOUT\n\n";
       userMsg += "Ad network took too long to respond.\n";
       userMsg += "Try: Check internet speed, try again in 2 min";
-    } else if (errorMsg.includes('not available')) {
+    } else if (errorMsg.toLowerCase().includes('not available') || errorMsg.toLowerCase().includes('undefined')) {
+      errorType = "SDK_NOT_LOADED";
       userMsg += "📡 SDK NOT LOADED\n\n";
       userMsg += "Ad SDK (libtl.com) failed to load.\n";
       userMsg += "Try: Refresh page, check connection";
+    } else if (errorMsg.toLowerCase().includes('network') || errorMsg.toLowerCase().includes('connection')) {
+      errorType = "NETWORK_ERROR";
+      userMsg += "📡 NETWORK ERROR\n\n";
+      userMsg += "Cannot reach ad server.\n";
+      userMsg += "Try: Check WiFi/mobile data, try again";
+    } else if (errorMsg.toLowerCase().includes('cors')) {
+      errorType = "CORS_ERROR";
+      userMsg += "🔌 CORS BLOCKED\n\n";
+      userMsg += "Ad server blocked this request.\n";
+      userMsg += "Try: Refresh page, clear cache";
+    } else if (errorMsg === '') {
+      errorType = "SILENT_FAILURE";
+      userMsg += "❓ NO ERROR MESSAGE\n\n";
+      userMsg += "Ad promise rejected with no details.\n";
+      userMsg += "Try: Refresh page, try again";
     } else {
-      userMsg += errorMsg + "\n\n";
+      errorType = "OTHER";
+      userMsg += "Error: " + errorMsg + "\n\n";
       userMsg += "Check browser console (F12) for details";
     }
+    
+    // Add error code at bottom for support
+    userMsg += "\n\n[ERROR CODE: " + errorType + "]";
     
     alert(userMsg);
   } finally {
@@ -891,12 +922,22 @@ async function watchPopup() {
   } catch (e) {
     clearTimeout(timeoutHandle);
     const errorMsg = String(e.message || e);
-    console.error('❌ Popup ad error:', errorMsg);
-    console.error('Error details:', e);
+    console.error('❌ FULL ERROR OBJECT:', e);
+    console.error('❌ Error message:', errorMsg);
+    console.error('❌ Error type:', e.name || 'Unknown');
+    console.error('❌ Error code:', e.code || 'No code');
+    console.error('❌ Stack:', e.stack);
+    
+    // Log raw error for debugging
+    if (e.response) console.error('Response:', e.response);
+    if (e.statusCode) console.error('Status Code:', e.statusCode);
     
     // Diagnose the error source
     let userMsg = "❌ Ad failed to load.\n\n";
-    if (errorMsg.includes('permission')) {
+    let errorType = "UNKNOWN";
+    
+    if (errorMsg.toLowerCase().includes('permission') || errorMsg.toLowerCase().includes('denied')) {
+      errorType = "PERMISSION_DENIED";
       userMsg += "🔒 PERMISSION DENIED\n\n";
       userMsg += "This could be:\n";
       userMsg += "• Monetag blocking your region\n";
@@ -904,18 +945,39 @@ async function watchPopup() {
       userMsg += "• Browser privacy settings too strict\n";
       userMsg += "• Firewall blocking libtl.com\n\n";
       userMsg += "Try: Disable VPN/ad blocker, refresh app";
-    } else if (errorMsg.includes('timeout')) {
+    } else if (errorMsg.toLowerCase().includes('timeout')) {
+      errorType = "TIMEOUT";
       userMsg += "⏱️ TIMEOUT\n\n";
       userMsg += "Ad network took too long to respond.\n";
       userMsg += "Try: Check internet speed, try again in 2 min";
-    } else if (errorMsg.includes('not available')) {
+    } else if (errorMsg.toLowerCase().includes('not available') || errorMsg.toLowerCase().includes('undefined')) {
+      errorType = "SDK_NOT_LOADED";
       userMsg += "📡 SDK NOT LOADED\n\n";
       userMsg += "Ad SDK (libtl.com) failed to load.\n";
       userMsg += "Try: Refresh page, check connection";
+    } else if (errorMsg.toLowerCase().includes('network') || errorMsg.toLowerCase().includes('connection')) {
+      errorType = "NETWORK_ERROR";
+      userMsg += "📡 NETWORK ERROR\n\n";
+      userMsg += "Cannot reach ad server.\n";
+      userMsg += "Try: Check WiFi/mobile data, try again";
+    } else if (errorMsg.toLowerCase().includes('cors')) {
+      errorType = "CORS_ERROR";
+      userMsg += "🔌 CORS BLOCKED\n\n";
+      userMsg += "Ad server blocked this request.\n";
+      userMsg += "Try: Refresh page, clear cache";
+    } else if (errorMsg === '') {
+      errorType = "SILENT_FAILURE";
+      userMsg += "❓ NO ERROR MESSAGE\n\n";
+      userMsg += "Ad promise rejected with no details.\n";
+      userMsg += "Try: Refresh page, try again";
     } else {
-      userMsg += errorMsg + "\n\n";
+      errorType = "OTHER";
+      userMsg += "Error: " + errorMsg + "\n\n";
       userMsg += "Check browser console (F12) for details";
     }
+    
+    // Add error code at bottom for support
+    userMsg += "\n\n[ERROR CODE: " + errorType + "]";
     
     alert(userMsg);
   } finally {
