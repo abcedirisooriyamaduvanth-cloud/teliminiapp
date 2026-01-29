@@ -8,7 +8,18 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427"></script>
+<script src="https://libtl.com/sdk.js" data-zone="10340427" data-sdk="show_10340427" async="true" defer="true"></script>
+<script>
+// Monitor ad SDK loading
+window.addEventListener('load', () => {
+  console.log('Page load event fired');
+  if (typeof show_10340427 === 'function') {
+    console.log('✅ Ad SDK already available');
+  } else {
+    console.warn('⚠️ Ad SDK not yet available, will retry');
+  }
+});
+</script>
 
 <style>
 /* ===== CORE THEME VARIABLES ===== */
@@ -573,6 +584,10 @@ tg.ready();
 const user = tg.initDataUnsafe.user;
 document.getElementById("username").innerText = "@" + (user.username || "player");
 
+console.log('=== Cricket Rewards App Started ===');
+console.log('User ID:', user?.id);
+console.log('SDK Status Check: show_10340427 =', typeof show_10340427);
+
 /* ==================== FIREBASE ==================== */
 const firebaseConfig = {
   apiKey: "AIzaSyBhwMJdFGmbxE8nAVKPyRJJzuHn6xmyI7Q",
@@ -711,9 +726,11 @@ function waitForSdk() {
       if (typeof show_10340427 === 'function') {
         adSdkReady = true;
         clearInterval(checkInterval);
+        console.log('✅ Ad SDK loaded successfully');
         resolve();
-      } else if (attempts > 50) {
+      } else if (attempts > 100) {
         clearInterval(checkInterval);
+        console.error('❌ Ad SDK failed to load after 10 seconds');
         reject('SDK not loaded');
       }
       attempts++;
@@ -721,22 +738,54 @@ function waitForSdk() {
   });
 }
 
-waitForSdk().catch(() => {});
+waitForSdk().then(() => {
+  console.log('Ad SDK is ready');
+}).catch((err) => {
+  console.error('Ad SDK error:', err);
+  console.warn('Ads may not work properly');
+});
 
 function loader(show) {
-  document.getElementById("loader").style.display = show ? "block" : "none";
+  const loaderEl = document.getElementById("loader");
+  if (show) {
+    loaderEl.style.display = "block";
+    loaderEl.innerHTML = `
+      <div class="loader-spinner"></div>
+      <p>Loading Advertisement...</p>
+      <p style="font-size: 0.9em; color: #aaa; margin-top: 8px;">This may take 5-30 seconds</p>
+    `;
+  } else {
+    loaderEl.style.display = "none";
+  }
 }
 
 async function watchRewarded() {
   if (!adSdkReady) {
     alert('⚠️ Ad SDK still loading... wait a moment');
+    console.warn('watchRewarded: SDK not ready');
     return;
   }
   
   loader(true);
+  let timeoutHandle;
   
   try {
+    console.log('Starting rewarded ad watch...');
+    
+    // Set timeout for ad loading
+    timeoutHandle = setTimeout(() => {
+      throw new Error('Ad loading timed out (30 seconds)');
+    }, 30000);
+    
+    // Validate function exists before calling
+    if (typeof show_10340427 !== 'function') {
+      throw new Error('show_10340427 function not available');
+    }
+    
     await show_10340427();
+    clearTimeout(timeoutHandle);
+    console.log('✅ Ad watched successfully');
+    
     // 2-min rewarded ad: +180 minutes and counts as 1 click toward unlock
     await userRef.transaction(d => {
       if (!d) return d;
@@ -758,7 +807,9 @@ async function watchRewarded() {
     updateChannelButtons(window.userData.totalMinutes, window.userData.joinedChannels || {});
     alert("🎉 +180 minutes! (Click counted toward unlock)");
   } catch (e) {
-    alert("❌ Ad failed to load. Check connection.");
+    clearTimeout(timeoutHandle);
+    console.error('❌ Rewarded ad error:', e.message);
+    alert("❌ Ad failed to load. Check your connection and try again.\nError: " + e.message);
   } finally {
     loader(false);
   }
@@ -767,13 +818,30 @@ async function watchRewarded() {
 async function watchPopup() {
   if (!adSdkReady) {
     alert('⚠️ Ad SDK still loading... wait a moment');
+    console.warn('watchPopup: SDK not ready');
     return;
   }
   
   loader(true);
+  let timeoutHandle;
   
   try {
+    console.log('Starting popup ad watch...');
+    
+    // Set timeout for ad loading
+    timeoutHandle = setTimeout(() => {
+      throw new Error('Ad loading timed out (30 seconds)');
+    }, 30000);
+    
+    // Validate function exists before calling
+    if (typeof show_10340427 !== 'function') {
+      throw new Error('show_10340427 function not available');
+    }
+    
     await show_10340427('pop');
+    clearTimeout(timeoutHandle);
+    console.log('✅ Popup ad watched successfully');
+    
     // 1-minute ad: +80 minutes and counts as 1 click toward unlock
     await userRef.transaction(d => {
       if (!d) return d;
@@ -795,7 +863,9 @@ async function watchPopup() {
     updateChannelButtons(window.userData.totalMinutes, window.userData.joinedChannels || {});
     alert("🔥 +80 minutes! (Click counted toward unlock)");
   } catch (e) {
-    alert("❌ Ad failed to load. Check connection.");
+    clearTimeout(timeoutHandle);
+    console.error('❌ Popup ad error:', e.message);
+    alert("❌ Ad failed to load. Check your connection and try again.\nError: " + e.message);
   } finally {
     loader(false);
   }
