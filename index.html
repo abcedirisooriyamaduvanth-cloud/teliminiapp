@@ -808,8 +808,34 @@ async function watchRewarded() {
     alert("🎉 +180 minutes! (Click counted toward unlock)");
   } catch (e) {
     clearTimeout(timeoutHandle);
-    console.error('❌ Rewarded ad error:', e.message);
-    alert("❌ Ad failed to load. Check your connection and try again.\nError: " + e.message);
+    const errorMsg = String(e.message || e);
+    console.error('❌ Rewarded ad error:', errorMsg);
+    console.error('Error details:', e);
+    
+    // Diagnose the error source
+    let userMsg = "❌ Ad failed to load.\n\n";
+    if (errorMsg.includes('permission')) {
+      userMsg += "🔒 PERMISSION DENIED\n\n";
+      userMsg += "This could be:\n";
+      userMsg += "• Monetag blocking your region\n";
+      userMsg += "• Ad blocker/VPN enabled\n";
+      userMsg += "• Browser privacy settings too strict\n";
+      userMsg += "• Firewall blocking libtl.com\n\n";
+      userMsg += "Try: Disable VPN/ad blocker, refresh app";
+    } else if (errorMsg.includes('timeout')) {
+      userMsg += "⏱️ TIMEOUT\n\n";
+      userMsg += "Ad network took too long to respond.\n";
+      userMsg += "Try: Check internet speed, try again in 2 min";
+    } else if (errorMsg.includes('not available')) {
+      userMsg += "📡 SDK NOT LOADED\n\n";
+      userMsg += "Ad SDK (libtl.com) failed to load.\n";
+      userMsg += "Try: Refresh page, check connection";
+    } else {
+      userMsg += errorMsg + "\n\n";
+      userMsg += "Check browser console (F12) for details";
+    }
+    
+    alert(userMsg);
   } finally {
     loader(false);
   }
@@ -864,8 +890,34 @@ async function watchPopup() {
     alert("🔥 +80 minutes! (Click counted toward unlock)");
   } catch (e) {
     clearTimeout(timeoutHandle);
-    console.error('❌ Popup ad error:', e.message);
-    alert("❌ Ad failed to load. Check your connection and try again.\nError: " + e.message);
+    const errorMsg = String(e.message || e);
+    console.error('❌ Popup ad error:', errorMsg);
+    console.error('Error details:', e);
+    
+    // Diagnose the error source
+    let userMsg = "❌ Ad failed to load.\n\n";
+    if (errorMsg.includes('permission')) {
+      userMsg += "🔒 PERMISSION DENIED\n\n";
+      userMsg += "This could be:\n";
+      userMsg += "• Monetag blocking your region\n";
+      userMsg += "• Ad blocker/VPN enabled\n";
+      userMsg += "• Browser privacy settings too strict\n";
+      userMsg += "• Firewall blocking libtl.com\n\n";
+      userMsg += "Try: Disable VPN/ad blocker, refresh app";
+    } else if (errorMsg.includes('timeout')) {
+      userMsg += "⏱️ TIMEOUT\n\n";
+      userMsg += "Ad network took too long to respond.\n";
+      userMsg += "Try: Check internet speed, try again in 2 min";
+    } else if (errorMsg.includes('not available')) {
+      userMsg += "📡 SDK NOT LOADED\n\n";
+      userMsg += "Ad SDK (libtl.com) failed to load.\n";
+      userMsg += "Try: Refresh page, check connection";
+    } else {
+      userMsg += errorMsg + "\n\n";
+      userMsg += "Check browser console (F12) for details";
+    }
+    
+    alert(userMsg);
   } finally {
     loader(false);
   }
